@@ -1,0 +1,50 @@
+{
+  "name": "jsreport-assets",
+  "version": "0.1.0",
+  "description": "jsreport extension embedding static assets like fonts or helpers into the templates",
+  "scripts": {
+    "test": "mocha test --timeout 5000 && standard",
+    "test:watch": "mocha test --watch"
+  },
+  "homepage": "https://github.com/jsreport/jsreport-assets",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jsreport/jsreport-assets.git"
+  },
+  "standard": {
+    "ignore": [
+      "main.js"
+    ],
+    "parser": "babel-eslint",
+    "env": {
+      "node": true,
+      "mocha": true,
+      "browser": true
+    }
+  },
+  "keywords": [
+    "jsreport",
+    "assets"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "async-replace": "1.0.1",
+    "bluebird": "3.4.6",
+    "minimatch": "3.0.3",
+    "node.extend": "1.1.6",
+    "shortid": "2.2.6"
+  },
+  "author": "Jan Blaha",
+  "devDependencies": {
+    "babel-eslint": "7.1.0",
+    "eslint": "3.9.1",
+    "eslint-config-standard-jsx": "3.2.0",
+    "eslint-plugin-babel": "3.3.0",
+    "mocha": "3.1.2",
+    "should": "11.1.1",
+    "standard": "8.5.0",
+    "jsreport-core": "1.0.7",
+    "jsreport-templates": "1.0.1",
+    "jsreport-jsrender": "1.0.1"
+  }
+}
