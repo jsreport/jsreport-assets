@@ -203,5 +203,27 @@ describe('assets', function () {
       res.content.toString().should.be.eql('hello')
     })
   })
+
+  it('should escape js string when encoding string', function () {
+    reporter.options.assets.allowedFiles = 'test/helpers.js'
+
+    return reporter.documentStore.collection('assets').insert({
+      name: 'helpers.js',
+      link: 'test/helpers.js'
+    }).then(function () {
+      return reporter.render({
+        template: {
+          content: '{{:~foo()}}',
+          recipe: 'html',
+          engine: 'jsrender',
+          scripts: [{
+            content: 'function beforeRender(req, res, done) { req.template.helpers = "{#asset helpers.js @encoding=string}"; done() }'
+          }]
+        }
+      }).then(function (res) {
+        res.content.toString().should.be.eql('hello')
+      })
+    })
+  })
 })
 

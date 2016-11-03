@@ -15,7 +15,8 @@
   },
   "standard": {
     "ignore": [
-      "main.js"
+      "main.js",
+      "helpers.js"
     ],
     "parser": "babel-eslint",
     "env": {
@@ -33,6 +34,7 @@
     "async-replace": "1.0.1",
     "bluebird": "3.4.6",
     "in-publish": "2.0.0",
+    "js-string-escape": "1.0.1",
     "minimatch": "3.0.3",
     "node.extend": "1.1.6",
     "shortid": "2.2.6"
@@ -53,6 +55,9 @@
     "jsreport-studio-dev": "1.0.2"
   },
   "files": [
-    "lib", "studio", "index.js", "jsreport.config.js"
+    "lib",
+    "studio",
+    "index.js",
+    "jsreport.config.js"
   ]
 }
