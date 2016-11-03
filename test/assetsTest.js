@@ -188,5 +188,20 @@ describe('assets', function () {
       })
     })
   })
+
+  it('should find assets on disk if not found in store but searchOnDiskIfNotFoundInStore is true', function () {
+    reporter.options.assets.searchOnDiskIfNotFoundInStore = true
+    reporter.options.assets.allowedFiles = 'test/test.html'
+
+    return reporter.render({
+      template: {
+        content: '{#asset test/test.html}',
+        recipe: 'html',
+        engine: 'none'
+      }
+    }).then(function (res) {
+      res.content.toString().should.be.eql('hello')
+    })
+  })
 })
 
