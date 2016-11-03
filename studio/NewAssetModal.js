@@ -13,7 +13,6 @@ export default class NewAssetModal extends Component {
   }
 
   async createAsset () {
-
     let entity = {}
 
     if (!this.state.isLink && (!this.refs.name.value || this.refs.name.value.indexOf('.')) < 0) {
@@ -50,22 +49,23 @@ export default class NewAssetModal extends Component {
           type='checkbox' checked={isLink}
           onChange={() => this.setState({ isLink: !isLink })} />
       </div>
-      {isLink ?
-        <div className='form-group'>
-          <label>Relative or absolute path to existing file</label>
-          <input type='text' name='link' ref='link' />
-        </div> :
-        <div className='form-group'>
-          <label>Name</label>
-          <input type='text' name='name' ref='name' />
-        </div>
+      {isLink ? <div className='form-group'>
+        <label>Relative or absolute path to existing file</label>
+        <input type='text' name='link' ref='link' />
+      </div> : <div className='form-group'>
+        <label>Name</label>
+        <input type='text' name='name' ref='name' />
+      </div>
       }
       <div className='form-group'>
         <span
           style={{color: 'red', display: error ? 'block' : 'none'}}>{error}</span>
       </div>
       <div className='button-bar'>
-        <button className='button confirmation' onClick={() => { this.props.close(); AssetUploadButton.OpenUploadNew() }}>Upload</button>
+        <button
+          className='button confirmation'
+          onClick={() => { this.props.close(); AssetUploadButton.OpenUploadNew() }}>Upload
+        </button>
         <button className={'button confirmation'} onClick={() => this.createAsset()}>Ok</button>
       </div>
     </div>

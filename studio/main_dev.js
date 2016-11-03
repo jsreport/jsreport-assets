@@ -11,6 +11,6 @@ Studio.addEntitySet({
   onNew: () => Studio.openModal(NewAssetModal)
 })
 
-Studio.addEditorComponent('files', AssetEditor)
+Studio.addEditorComponent('assets', AssetEditor)
 Studio.addToolbarComponent(AssetUploadButton)
 Studio.addPropertiesComponent(AssetProperties.title, AssetProperties, (entity) => entity.__entitySet === 'assets')

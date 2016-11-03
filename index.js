@@ -1,4 +1,4 @@
-var main = require('./lib/scripts.js')
+var main = require('./lib/assets.js')
 var config = require('./jsreport.config.js')
 
 module.exports = function (options) {

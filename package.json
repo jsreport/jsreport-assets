@@ -4,7 +4,9 @@
   "description": "jsreport extension embedding static assets like fonts or helpers into the templates",
   "scripts": {
     "test": "mocha test --timeout 5000 && standard",
-    "test:watch": "mocha test --watch"
+    "test:watch": "mocha test --watch",
+    "build": "jsreport-studio-build",
+    "prepublish": "in-publish && jsreport-studio-build || not-in-publish"
   },
   "homepage": "https://github.com/jsreport/jsreport-assets",
   "repository": {
@@ -30,6 +32,7 @@
   "dependencies": {
     "async-replace": "1.0.1",
     "bluebird": "3.4.6",
+    "in-publish": "2.0.0",
     "minimatch": "3.0.3",
     "node.extend": "1.1.6",
     "shortid": "2.2.6"
@@ -45,6 +48,11 @@
     "standard": "8.5.0",
     "jsreport-core": "1.0.7",
     "jsreport-templates": "1.0.1",
-    "jsreport-jsrender": "1.0.1"
-  }
+    "jsreport-scripts": "1.1.1",
+    "jsreport-jsrender": "1.0.1",
+    "jsreport-studio-dev": "1.0.2"
+  },
+  "files": [
+    "lib", "studio", "index.js", "jsreport.config.js"
+  ]
 }

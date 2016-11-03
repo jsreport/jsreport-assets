@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
 import AssetUploadButton from './AssetUploadButton.js'
-import fileSaver from 'filesaver.js-npm'
-import { TextEditor } from 'jsreport-studio'
-import Studio from 'jsreport-studio'
+import Studio, { TextEditor } from 'jsreport-studio'
 
 export default class FileEditor extends Component {
   constructor () {
@@ -15,9 +13,7 @@ export default class FileEditor extends Component {
 
     var content = entity.content
     if (entity.link && !entity.content) {
-      const response = await Studio.api.get(`api/asset/${entity.name}`, { parseJSON: false })
-      content = response
-      //Studio.updateEntity({ _id: entity._id, content: btoa(response) })
+      content = await Studio.api.get(`api/asset/${entity.name}`, { parseJSON: false })
     }
 
     this.setState({ isMetaView: false, content: content })
@@ -42,14 +38,16 @@ export default class FileEditor extends Component {
 
     return (isMetaView ? <div className='custom-editor'>
       <div><h1><i className='fa fa-file' /> {entity.name}</h1></div>
+      <div><i>assets extension is currently in beta</i></div>
       <div>
         <div>Embed into a template content, template helpers using or a custom script:
           <code>
             <h2 style={{textTransform: 'none'}}>
-              { '\{#asset ' + entity.name + '}'}
+              { '{#asset ' + entity.name + '}'}
             </h2>
+
             <h2 style={{textTransform: 'none'}}>
-              { '\{#asset ' + entity.name + ' @encoding=base64}'}
+              { '{#asset ' + entity.name + ' @encoding=base64}'}
             </h2>
           </code>
         </div>
@@ -58,10 +56,10 @@ export default class FileEditor extends Component {
         <a className='button confirmation' target='_blank' href={downloadUrl}>
           <i className='fa fa-download' /> Download file
         </a>
-        {entity.link ? <span /> :
-          <button className='button confirmation' onClick={() => AssetUploadButton.OpenUpload()}>
-            <i className='fa fa-upload' /> Upload file
-          </button>}
+        {entity.link
+          ? <span /> : <button className='button confirmation'
+            onClick={() => AssetUploadButton.OpenUpload()}><i className='fa fa-upload' />
+          Upload file</button>}
         <button className='button confirmation' onClick={() => this.openEditor()}>
           <i className='fa fa-folder-open' /> Open in editor
         </button>

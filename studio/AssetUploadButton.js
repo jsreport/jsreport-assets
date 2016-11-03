@@ -83,8 +83,7 @@ export default class AssetUploadButton extends Component {
   }
 
   renderUpload () {
-    return <input
-      type='file' key='file' ref='file' style={{display: 'none'}} onChange={(e) => this.upload(e)}></input>
+    return <input type='file' key='file' ref='file' style={{display: 'none'}} onChange={(e) => this.upload(e)} />
   }
 
   render () {
