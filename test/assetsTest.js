@@ -225,5 +225,19 @@ describe('assets', function () {
       })
     })
   })
+
+  it('should fail if asset doesn\'t exists', function () {
+    return reporter.render({
+      template: {
+        content: '{#asset a.html}',
+        recipe: 'html',
+        engine: 'none'
+      }
+    }).catch(function (e) {
+      return 'ok'
+    }).then(function (m) {
+      m.should.be.eql('ok')
+    })
+  })
 })
 
