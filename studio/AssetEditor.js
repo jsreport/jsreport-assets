@@ -13,18 +13,18 @@ export default class FileEditor extends Component {
 
     var content = entity.content
     if (entity.link && !entity.content) {
-      content = await Studio.api.get(`api/asset/${entity.name}`, { parseJSON: false })
+      content = await Studio.api.get(`assets/${entity.name}`, { parseJSON: false })
     }
 
     this.setState({ isMetaView: false, content: content })
   }
 
-  async componentDidUpdate () {
+  async componentDidUpdate (prevProps) {
     const { entity } = this.props
 
-    if (entity.link && (!this.state.link || this.state.link.indexOf(entity.link) === -1)) {
+    if (entity.link && (!this.state.link || prevProps.entity.link !== entity.link)) {
       try {
-        const link = await Studio.api.get(`api/asset/link/${encodeURIComponent(entity.link)}`, { parseJSON: false })
+        const link = await Studio.api.get(`assets/link/${encodeURIComponent(entity.link)}`, { parseJSON: false })
         this.setState({ link: link })
       } catch (e) {
 
@@ -35,7 +35,7 @@ export default class FileEditor extends Component {
   render () {
     const { entity, onUpdate } = this.props
     const { isMetaView, content, link } = this.state
-    const downloadUrl = Studio.resolveUrl(`api/asset/${entity.name}`)
+    const downloadUrl = Studio.resolveUrl(`assets/${entity.name}`)
     let mode = 'text'
     if (entity.name.includes('.js')) {
       mode = 'javascript'
@@ -63,7 +63,7 @@ export default class FileEditor extends Component {
           </h3>
 
           <h3 style={{textTransform: 'none'}}>
-            { '{#asset ' + entity.name + ' @encoding=utf8|base64|javascript}'}
+            { '{#asset ' + entity.name + ' @encoding=utf8|base64|string|link}'}
           </h3>
         </code>
       </p>

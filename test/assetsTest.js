@@ -226,7 +226,46 @@ describe('assets', function () {
     })
   })
 
-  it('should fail if asset doesn\'t exists', function () {
+  it('should return link based on rootUrlForLinks if encoding is link', function () {
+    reporter.options.assets.allowedFiles = 'test/helpers.js'
+    reporter.options.assets.rootUrlForLinks = 'http://localhost:123'
+
+    return reporter.documentStore.collection('assets').insert({
+      name: 'helpers.js',
+      link: 'test/helpers.js'
+    }).then(function () {
+      return reporter.render({
+        template: {
+          content: '{#asset helpers.js @encoding=link}',
+          recipe: 'html',
+          engine: 'none'
+        }
+      }).then(function (res) {
+        res.content.toString().should.containEql('http://localhost:123/assets/helpers.js')
+      })
+    })
+  })
+
+  it('should return link based on localhost if not rootUrlForLinks and not url', function () {
+    reporter.options.assets.allowedFiles = 'test/helpers.js'
+
+    return reporter.documentStore.collection('assets').insert({
+      name: 'helpers.js',
+      link: 'test/helpers.js'
+    }).then(function () {
+      return reporter.render({
+        template: {
+          content: '{#asset helpers.js @encoding=link}',
+          recipe: 'html',
+          engine: 'none'
+        }
+      }).then(function (res) {
+        res.content.toString().should.containEql('https://localhost/assets/helpers.js')
+      })
+    })
+  })
+
+  it('should fail if asset doesn\'t exist', function () {
     return reporter.render({
       template: {
         content: '{#asset a.html}',
