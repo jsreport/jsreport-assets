@@ -1,5 +1,6 @@
 require('should')
 var Reporter = require('jsreport-core')
+var isAssetPathValid = require('../lib/assets').isAssetPathValid
 
 describe('assets', function () {
   var reporter
@@ -280,3 +281,36 @@ describe('assets', function () {
   })
 })
 
+describe('isAssetPathValid', function () {
+  it('* match test.js', function () {
+    isAssetPathValid('**/*.*', '../test.js', '/data/root/test.js').should.be.true()
+  })
+
+  it('test.js should not match foo.js', function () {
+    isAssetPathValid('test.js', '../foo.js', '/data/root/foo.js').should.be.false()
+  })
+
+  it('**/test.js should match data/test.js', function () {
+    isAssetPathValid('**/test.js', 'data/test.js', '/foo/data/test.js').should.be.true()
+  })
+
+  it('data/test.js should match data/test.js', function () {
+    isAssetPathValid('data/test.js', 'data/test.js', '/foo/data/test.js').should.be.true()
+  })
+
+  it('+(bar|foo)/test.js should match both bar/test.js and foo/test.js but not data/test.js', function () {
+    isAssetPathValid('+(bar|foo)/test.js', 'bar/test.js', '/foo/bar/test.js').should.be.true()
+    isAssetPathValid('+(bar|foo)/test.js', 'foo/test.js', '/foo/fioo/test.js').should.be.true()
+    isAssetPathValid('+(bar|foo)/test.js', 'data/test.js', '/foo/data/test.js').should.be.false()
+  })
+
+  it('+(bar|foo)/+(*.js|*.css) should match both bar/test.js and foo/test.css but not bar/test.txt', function () {
+    isAssetPathValid('+(bar|foo)/+(*.js|*.css)', 'bar/test.js', '/foo/bar/test.js').should.be.true()
+    isAssetPathValid('+(bar|foo)/+(*.js|*.css)', 'foo/test.css', '/foo/fioo/test.css').should.be.true()
+    isAssetPathValid('+(bar|foo)/+(*.js|*.css)', 'bar/test.txt', 'foo/bar/test.txt').should.be.false()
+  })
+
+  it('undefined allowedFiles should not match', function () {
+    isAssetPathValid(undefined, 'test/test.html', 'E:\\work\\jsreport\\jsreport-assets\\test\\test.html').should.be.false()
+  })
+})
