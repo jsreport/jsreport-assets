@@ -1,6 +1,7 @@
 require('should')
 var Reporter = require('jsreport-core')
 var isAssetPathValid = require('../lib/assets').isAssetPathValid
+var request = require('supertest')
 
 describe('assets', function () {
   var reporter
@@ -278,6 +279,84 @@ describe('assets', function () {
     }).then(function (m) {
       m.should.be.eql('ok')
     })
+  })
+})
+
+describe('assets with express', function () {
+  var reporter
+
+  beforeEach(function () {
+    reporter = Reporter()
+      .use(require('jsreport-express')())
+      .use(require('../')())
+
+    return reporter.init()
+  })
+
+  it('should expose odata endpoint', function (done) {
+    request(reporter.express.app)
+      .get('/odata/assets')
+      .expect(200, done)
+  })
+
+  it('/assets/foo.txt should return content with correct headers', function (done) {
+    reporter.documentStore.collection('assets').insert({
+      name: 'foo.html',
+      content: 'hello'
+    }).then(function () {
+      request(reporter.express.app)
+        .get('/assets/foo.html')
+        .expect(200)
+        .expect('Content-Type', 'text/html; charset=UTF-8')
+        .expect('Cache-Control', 'public, max-age=0')
+        .expect('Last-Modified', /.+/)
+        .expect('ETag', /.+/)
+        .expect('hello', done)
+    }).catch(done)
+  })
+
+  it('/assets/test.html should return content with correct headers for linked file', function (done) {
+    reporter.options.assets = { allowedFiles: '**/test.html' }
+    reporter.documentStore.collection('assets').insert({
+      name: 'test.html',
+      link: 'test/test.html'
+    }).then(function () {
+      request(reporter.express.app)
+        .get('/assets/test.html')
+        .expect(200)
+        .expect('Content-Type', 'text/html; charset=UTF-8')
+        .expect('Cache-Control', 'public, max-age=0')
+        .expect('Last-Modified', /.+/)
+        .expect('ETag', /.+/)
+        .expect('hello', done)
+    }).catch(done)
+  })
+
+  it('/assets/encodeURIComponent(test/test.html) should return content with correct headers for external file', function (done) {
+    reporter.options.assets.searchOnDiskIfNotFoundInStore = true
+    reporter.options.assets.allowedFiles = 'test/test.html'
+
+    request(reporter.express.app)
+      .get('/assets/' + encodeURIComponent('test/test.html'))
+      .expect(200)
+      .expect('Content-Type', 'text/html; charset=UTF-8')
+      .expect('Cache-Control', 'public, max-age=0')
+      .expect('Last-Modified', /.+/)
+      .expect('ETag', /.+/)
+      .expect('hello', done)
+  })
+
+  it('/assets/foo.txt?download=true should return content as attachment', function (done) {
+    reporter.documentStore.collection('assets').insert({
+      name: 'foo.html',
+      content: 'hello'
+    }).then(function () {
+      request(reporter.express.app)
+        .get('/assets/foo.html?download=true')
+        .expect(200)
+        .expect('Content-Disposition', 'attachment;filename=foo.html')
+        .expect('hello', done)
+    }).catch(done)
   })
 })
 

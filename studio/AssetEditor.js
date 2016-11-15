@@ -12,8 +12,13 @@ export default class FileEditor extends Component {
     const { entity } = this.props
 
     var content = entity.content
-    if (entity.link && !entity.content) {
-      content = btoa(await Studio.api.get(`assets/${encodeURIComponent(entity.name)}`, { parseJSON: false }))
+    if (entity.link && !entity.content && !this.state.loadFailed) {
+      try {
+        content = btoa(await Studio.api.get(`assets/${encodeURIComponent(entity.name)}`, { parseJSON: false }))
+      } catch (e) {
+        this.setState({ loadFailed: true })
+        throw e
+      }
     }
 
     this.setState({ isMetaView: false, content: content })
@@ -22,12 +27,13 @@ export default class FileEditor extends Component {
   async componentDidUpdate (prevProps) {
     const { entity } = this.props
 
-    if (entity.link && (!this.state.link || prevProps.entity.link !== entity.link)) {
+    if (entity.link && (!this.state.link || prevProps.entity.link !== entity.link) && !this.state.loadFailed) {
       try {
         const link = await Studio.api.get(`assets/link/${encodeURIComponent(entity.link)}`, { parseJSON: false })
         this.setState({ link: link })
       } catch (e) {
-
+        this.setState({ loadFailed: true })
+        throw e
       }
     }
   }
@@ -35,7 +41,7 @@ export default class FileEditor extends Component {
   render () {
     const { entity, onUpdate } = this.props
     const { isMetaView, content, link } = this.state
-    const downloadUrl = Studio.resolveUrl(`assets/${entity.name}`)
+    const downloadUrl = Studio.resolveUrl(`assets/${encodeURIComponent(entity.name)}?download=true`)
     let mode = 'text'
     if (entity.name.includes('.js')) {
       mode = 'javascript'
