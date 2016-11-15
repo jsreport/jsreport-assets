@@ -13,7 +13,7 @@ export default class FileEditor extends Component {
 
     var content = entity.content
     if (entity.link && !entity.content) {
-      content = await Studio.api.get(`assets/${entity.name}`, { parseJSON: false })
+      content = btoa(await Studio.api.get(`assets/${encodeURIComponent(entity.name)}`, { parseJSON: false }))
     }
 
     this.setState({ isMetaView: false, content: content })
@@ -55,7 +55,7 @@ export default class FileEditor extends Component {
 
       {link ? <p>Asset is linked to file: {link}</p> : <div />}
 
-      <p>
+      <div>
         Embed into a template content, template helpers using or a custom script:
         <code>
           <h3 style={{textTransform: 'none'}}>
@@ -66,7 +66,7 @@ export default class FileEditor extends Component {
             { '{#asset ' + entity.name + ' @encoding=utf8|base64|string|link}'}
           </h3>
         </code>
-      </p>
+      </div>
       <div>
         <a className='button confirmation' target='_blank' href={downloadUrl}>
           <i className='fa fa-download' /> Download file
@@ -81,9 +81,8 @@ export default class FileEditor extends Component {
     </div> : <TextEditor
       name={entity._id}
       mode={mode}
-      value={entity.content ? atob(entity.content) : content}
-      onUpdate={(v) => onUpdate(Object.assign({}, entity, {content: btoa(v)}))}
-      />)
+      value={atob(((entity.content || entity.forceUpdate) ? entity.content : content) || '')}
+      onUpdate={(v) => onUpdate(Object.assign({}, entity, {content: btoa(v), forceUpdate: true}))} />)
   }
 }
 
