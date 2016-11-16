@@ -1,6 +1,16 @@
 import React, { Component } from 'react'
 import AssetUploadButton from './AssetUploadButton.js'
 import Studio, { TextEditor } from 'jsreport-studio'
+import superagent from 'superagent'
+import Promise from 'bluebird'
+
+// Studio.api currently always open dialogs on failures and that is what we don't want, so arbitrary implementaiton here
+const getTextFromApi = (path) => {
+  return new Promise((resolve, reject) => {
+    const request = superagent.get(Studio.resolveUrl(path))
+    request.end((err, { text } = {}) => err ? reject(new Error(text || err.toString())) : resolve(text))
+  })
+}
 
 export default class FileEditor extends Component {
   constructor () {
@@ -14,6 +24,7 @@ export default class FileEditor extends Component {
     var content = entity.content
     if (entity.link && !entity.content && !this.state.loadFailed) {
       try {
+        await Studio.saveEntity(entity._id)
         content = btoa(await Studio.api.get(`assets/${encodeURIComponent(entity.name)}`, { parseJSON: false }))
       } catch (e) {
         this.setState({ loadFailed: true })
@@ -29,11 +40,10 @@ export default class FileEditor extends Component {
 
     if (entity.link && (!this.state.link || prevProps.entity.link !== entity.link) && !this.state.loadFailed) {
       try {
-        const link = await Studio.api.get(`assets/link/${encodeURIComponent(entity.link)}`, { parseJSON: false })
+        const link = await getTextFromApi(`assets/link/${encodeURIComponent(entity.link)}`)
         this.setState({ link: link })
       } catch (e) {
-        this.setState({ loadFailed: true })
-        throw e
+        this.setState({ link: e.message })
       }
     }
   }
