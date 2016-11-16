@@ -243,7 +243,7 @@ describe('assets', function () {
           engine: 'none'
         }
       }).then(function (res) {
-        res.content.toString().should.containEql('http://localhost:123/assets/helpers.js')
+        res.content.toString().should.containEql('http://localhost:123/assets/content?name=helpers.js')
       })
     })
   })
@@ -262,7 +262,7 @@ describe('assets', function () {
           engine: 'none'
         }
       }).then(function (res) {
-        res.content.toString().should.containEql('https://localhost/assets/helpers.js')
+        res.content.toString().should.containEql('https://localhost/assets/content?name=helpers.js')
       })
     })
   })
@@ -299,13 +299,13 @@ describe('assets with express', function () {
       .expect(200, done)
   })
 
-  it('/assets/foo.txt should return content with correct headers', function (done) {
+  it('/assets/content?name=foo.txt should return content with correct headers', function (done) {
     reporter.documentStore.collection('assets').insert({
       name: 'foo.html',
       content: 'hello'
     }).then(function () {
       request(reporter.express.app)
-        .get('/assets/foo.html')
+        .get('/assets/content?name=foo.html')
         .expect(200)
         .expect('Content-Type', 'text/html; charset=UTF-8')
         .expect('Cache-Control', 'public, max-age=0')
@@ -315,14 +315,14 @@ describe('assets with express', function () {
     }).catch(done)
   })
 
-  it('/assets/test.html should return content with correct headers for linked file', function (done) {
+  it('/assets/content?name=test.html should return content with correct headers for linked file', function (done) {
     reporter.options.assets = { allowedFiles: '**/test.html' }
     reporter.documentStore.collection('assets').insert({
       name: 'test.html',
       link: 'test/test.html'
     }).then(function () {
       request(reporter.express.app)
-        .get('/assets/test.html')
+        .get('/assets/content/?name=test.html')
         .expect(200)
         .expect('Content-Type', 'text/html; charset=UTF-8')
         .expect('Cache-Control', 'public, max-age=0')
@@ -332,12 +332,12 @@ describe('assets with express', function () {
     }).catch(done)
   })
 
-  it('/assets/encodeURIComponent(test/test.html) should return content with correct headers for external file', function (done) {
+  it('/assets/content?name=encodeURIComponent(test/test.html) should return content with correct headers for external file', function (done) {
     reporter.options.assets.searchOnDiskIfNotFoundInStore = true
     reporter.options.assets.allowedFiles = 'test/test.html'
 
     request(reporter.express.app)
-      .get('/assets/' + encodeURIComponent('test/test.html'))
+      .get('/assets/content?name=' + encodeURIComponent('test/test.html'))
       .expect(200)
       .expect('Content-Type', 'text/html; charset=UTF-8')
       .expect('Cache-Control', 'public, max-age=0')
@@ -346,13 +346,13 @@ describe('assets with express', function () {
       .expect('hello', done)
   })
 
-  it('/assets/foo.txt?download=true should return content as attachment', function (done) {
+  it('/assets/content?name=foo.txt&download=true should return content as attachment', function (done) {
     reporter.documentStore.collection('assets').insert({
       name: 'foo.html',
       content: 'hello'
     }).then(function () {
       request(reporter.express.app)
-        .get('/assets/foo.html?download=true')
+        .get('/assets/content?name=foo.html&download=true')
         .expect(200)
         .expect('Content-Disposition', 'attachment;filename=foo.html')
         .expect('hello', done)
