@@ -45,6 +45,24 @@ describe('assets', function () {
     })
   })
 
+  it('should extract static asset which is marked as shared helper', function () {
+    return reporter.documentStore.collection('assets').insert({
+      name: 'foo.html',
+      isSharedHelper: true,
+      content: 'function foo() { return "hello" }'
+    }).then(function () {
+      return reporter.render({
+        template: {
+          content: '{{:~foo()}}',
+          recipe: 'html',
+          engine: 'jsrender'
+        }
+      }).then(function (res) {
+        res.content.toString().should.be.eql('hello')
+      })
+    })
+  })
+
   it('should extract static asset as base64 when @encoding=base64', function () {
     return reporter.documentStore.collection('assets').insert({
       name: 'foo.html',

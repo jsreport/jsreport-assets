@@ -75,6 +75,8 @@ export default class FileEditor extends Component {
 
       {link ? <p>Asset is linked to file: {link}</p> : <div />}
 
+      {entity.isSharedHelper ? <p>Asset is marked as shared helper and will be part of every template helper functions</p> : <div />}
+
       <div>
         Embed into a template content, template helpers using or a custom script:
         <code>
