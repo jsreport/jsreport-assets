@@ -48,6 +48,10 @@ export default class FileEditor extends Component {
     }
   }
 
+  isImage (entity) {
+    return entity.name.match(/\.(jpeg|jpg|gif|png|svg)$/) != null
+  }
+
   render () {
     const { entity, onUpdate } = this.props
     const { isMetaView, content, link } = this.state
@@ -90,9 +94,13 @@ export default class FileEditor extends Component {
         {entity.link
           ? <span /> : <button className='button confirmation' onClick={() => AssetUploadButton.OpenUpload()}><i className='fa fa-upload' />
           Upload file</button>}
-        <button className='button confirmation' onClick={() => this.openEditor()}>
+        {this.isImage(entity) ? <span /> : <button className='button confirmation' onClick={() => this.openEditor()}>
           <i className='fa fa-folder-open' /> Open in editor
         </button>
+        }
+      </div>
+      <div style={{overflow: 'auto'}}>
+        {this.isImage(entity) ? <img src={Studio.resolveUrl(`assets/content/${entity.name}?v=${new Date().getTime()}`)} style={{display: 'block', margin: '3rem auto'}} /> : <span />}
       </div>
     </div> : <TextEditor
       name={entity._id}
