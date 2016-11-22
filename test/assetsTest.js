@@ -346,7 +346,7 @@ describe('assets with express', function () {
       .expect('hello', done)
   })
 
-  it.only('/assets/link/test/test.html should return link', function (done) {
+  it('/assets/link/test/test.html should return link', function (done) {
     reporter.options.assets.searchOnDiskIfNotFoundInStore = true
     reporter.options.assets.allowedFiles = 'test/test.html'
 
@@ -369,7 +369,6 @@ describe('assets with express', function () {
       .expect('ETag', /.+/)
       .expect('hello', done)
   })
-
 
   it('/assets/content/foo.html&download=true should return content as attachment', function (done) {
     reporter.documentStore.collection('assets').insert({
