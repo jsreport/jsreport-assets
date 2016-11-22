@@ -353,7 +353,7 @@ describe('assets with express', function () {
     request(reporter.express.app)
       .get('/assets/link/test/test.html')
       .expect(200)
-      .expect(/jsreport-assets\\test\\test.html/, done)
+      .expect(/test.html/, done)
   })
 
   it('/assets/content/test/test with space.html) should return content with correct headers for external file', function (done) {
