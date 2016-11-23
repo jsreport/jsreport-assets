@@ -29,7 +29,7 @@ Studio.entityTreeIconResolvers.push((entity) => {
   const extension = parts[parts.length - 1]
 
   switch (extension) {
-    case 'html': return 'fa-html5';
+    case 'html': return 'fa-html5'
     case 'jpg':
     case 'jpeg':
     case 'png':
