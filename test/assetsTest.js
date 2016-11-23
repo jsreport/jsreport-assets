@@ -261,7 +261,7 @@ describe('assets', function () {
           engine: 'none'
         }
       }).then(function (res) {
-        res.content.toString().should.containEql('http://localhost:123/assets/content/helpers.js')
+        res.content.toString().should.containEql('http://localhost:123/assets/content/test/helpers.js')
       })
     })
   })
@@ -280,7 +280,7 @@ describe('assets', function () {
           engine: 'none'
         }
       }).then(function (res) {
-        res.content.toString().should.containEql('https://localhost/assets/content/helpers.js')
+        res.content.toString().should.containEql('https://localhost/assets/content/test/helpers.js')
       })
     })
   })
