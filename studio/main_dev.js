@@ -14,3 +14,28 @@ Studio.addEntitySet({
 Studio.addEditorComponent('assets', AssetEditor)
 Studio.addToolbarComponent(AssetUploadButton)
 Studio.addPropertiesComponent(AssetProperties.title, AssetProperties, (entity) => entity.__entitySet === 'assets')
+
+Studio.entityTreeIconResolvers.push((entity) => {
+  if (entity.__entitySet !== 'assets') {
+    return
+  }
+
+  const parts = entity.name.split('.')
+
+  if (parts.length === 1) {
+    return
+  }
+
+  const extension = parts[parts.length - 1]
+
+  switch (extension) {
+    case 'html': return 'fa-html5';
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+    case 'svg': return 'fa-camera'
+    case 'js': return 'fa-cog'
+    case 'css': return 'fa-css3'
+  }
+})
