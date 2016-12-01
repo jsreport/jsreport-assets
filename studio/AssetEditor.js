@@ -82,8 +82,12 @@ export default class FileEditor extends Component {
           </h3>
 
           <h3 style={{textTransform: 'none'}}>
-            { '{#asset ' + entity.name + ' @encoding=utf8|base64|string|link}'}
+            { '{#asset ' + entity.name + ' @encoding=utf8|base64|string|link|dataURI}'}
           </h3>
+
+          {this.isImage(entity) ? <h3 style={{textTransform: 'none'}}>
+            { '<img src="{#asset ' + entity.name + ' @encoding=dataURI}" />'}
+          </h3> : <span />}
         </code>
       </div>
       <div>

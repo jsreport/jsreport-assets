@@ -80,6 +80,42 @@ describe('assets', function () {
     })
   })
 
+  it('should extract static asset as data uri when @encoding=dataURI', function () {
+    return reporter.documentStore.collection('assets').insert({
+      name: 'foo.png',
+      content: 'hello'
+    }).then(function () {
+      return reporter.render({
+        template: {
+          content: '{#asset foo.png @encoding=dataURI}',
+          recipe: 'html',
+          engine: 'none'
+        }
+      }).then(function (res) {
+        res.content.toString().should.be.eql('data:image/png;base64,' + new Buffer('hello').toString('base64'))
+      })
+    })
+  })
+
+  it('should fail for asset with @encoding=dataURI but no image', function () {
+    return reporter.documentStore.collection('assets').insert({
+      name: 'foo.html',
+      content: 'hello'
+    }).then(function () {
+      return reporter.render({
+        template: {
+          content: '{#asset foo.html @encoding=dataURI}',
+          recipe: 'html',
+          engine: 'none'
+        }
+      }).catch(function () {
+        return 'ok'
+      }).then(function (res) {
+        res.should.be.eql('ok')
+      })
+    })
+  })
+
   it('should extract static asset with name dynamically constructed by templating engine', function () {
     return reporter.documentStore.collection('assets').insert({
       name: 'a.html',
