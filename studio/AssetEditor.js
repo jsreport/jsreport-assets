@@ -56,17 +56,14 @@ export default class FileEditor extends Component {
     const { entity, onUpdate } = this.props
     const { isMetaView, content, link } = this.state
     const downloadUrl = Studio.resolveUrl(`assets/content/${entity.name}?download=true`)
-    let mode = 'text'
-    if (entity.name.includes('.js')) {
+
+    let parts = entity.name.split('.')
+    let mode = parts[parts.length - 1]
+    if (mode === 'js') {
       mode = 'javascript'
     }
-
-    if (entity.name.includes('.css')) {
-      mode = 'css'
-    }
-
-    if (entity.name.includes('.html')) {
-      mode = 'html'
+    if (mode === 'html') {
+      mode = 'handlebars'
     }
 
     return (isMetaView ? <div className='custom-editor'>
