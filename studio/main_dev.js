@@ -8,7 +8,8 @@ Studio.addEntitySet({
   name: 'assets',
   faIcon: 'fa-file',
   visibleName: 'asset',
-  onNew: () => Studio.openModal(NewAssetModal)
+  onNew: () => Studio.openModal(NewAssetModal),
+  referenceAttributes: ['isSharedHelper']
 })
 
 Studio.addEditorComponent('assets', AssetEditor)
@@ -35,7 +36,8 @@ Studio.entityTreeIconResolvers.push((entity) => {
     case 'png':
     case 'gif':
     case 'svg': return 'fa-camera'
-    case 'js': return 'fa-cog'
+    case 'js': return entity.isSharedHelper ? 'fa-cogs' : 'fa-cog'
     case 'css': return 'fa-css3'
+    default: return 'fa-file-o '
   }
 })
