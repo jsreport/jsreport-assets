@@ -57,7 +57,17 @@ export default class FileEditor extends Component {
   }
 
   isFont (entity) {
-    return entity.name.match(/\.(otf|woff|ttf)$/) != null
+    return entity.name.match(/\.(otf|woff|ttf|eot|woff2)$/) != null
+  }
+
+  getFormat (extension) {
+    switch (extension) {
+      case 'ttf': return 'truetype'
+      case 'woff2': return 'woff2'
+      case 'eot': return 'embedded-opentype'
+      default: return 'woff'
+
+    }
   }
 
   getEmbeddingCode (entity) {
@@ -72,7 +82,7 @@ export default class FileEditor extends Component {
       return `@font-face {
   font-family: '${parts[0]}';
   src: url({#asset ${entity.name} @encoding=dataURI});
-  format('${extension === 'ttf' ? 'truetype' : 'woff'}');
+  format('${this.getFormat(extension)}');
 }`
     }
 

@@ -62,12 +62,12 @@ export default class NewAssetModal extends Component {
         <input type='text' name='name' ref='name' placeholder='styles.css' onKeyPress={(e) => this.handleKeyPress(e)} />
       </div>
       }
-      <div className='form-group'>
+      {Studio.extensions.assets.options.allowAssetsLinkedToFiles !== false ? <div className='form-group'>
         <label>link to existing file</label>
         <input
           type='checkbox' checked={isLink}
           onChange={() => this.setState({ isLink: !isLink })} />
-      </div>
+      </div> : <div />}
       <div className='form-group'>
         <span
           style={{color: 'red', display: error ? 'block' : 'none'}}>{error}</span>
