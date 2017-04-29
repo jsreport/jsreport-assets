@@ -1,9 +1,10 @@
 {
   "name": "jsreport-assets",
-  "version": "0.6.3",
+  "version": "0.6.5",
   "description": "jsreport extension embedding static assets like fonts or helpers into the templates",
   "scripts": {
-    "start": "jsreport-studio-start --httpPort 5488",
+    "start": "jsreport-studio-start",
+    "run": "npm run build && jsreport-studio-start --run-only",
     "test": "mocha test --timeout 5000 && standard",
     "test:watch": "mocha test --watch",
     "build": "jsreport-studio-build",

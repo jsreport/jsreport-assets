@@ -5,12 +5,12 @@
 
 > jsreport extension embedding static assets like fonts or helpers into the templates
 
-See http://jsreport.net/learn/assets
+See https://jsreport.net/learn/assets
 
-##Installation
+## Installation
 > npm install jsreport-assets --production
 
-##jsreport-core
+## jsreport-core
 You can apply this extension also manually to [jsreport-core](https://github.com/jsreport/jsreport-core)
 
 ```js

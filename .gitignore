@@ -40,5 +40,8 @@ jspm_packages
 studio/main.js
 studio/main.js.map
 
-data
+# jsreport configuration and files
 dev.config.json
+prod.config.json
+data
+logs
