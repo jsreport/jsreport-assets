@@ -37,6 +37,10 @@ export default class NewAssetModal extends Component {
     }
 
     try {
+      if (Studio.workspaces) {
+        await Studio.workspaces.save()
+      }
+
       let response = await Studio.api.post('/odata/assets', {
         data: entity
       })
