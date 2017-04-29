@@ -2,6 +2,7 @@ require('should')
 var Reporter = require('jsreport-core')
 var isAssetPathValid = require('../lib/assets').isAssetPathValid
 var request = require('supertest')
+var Buffer = require('safe-buffer').Buffer
 
 describe('assets', function () {
   var reporter

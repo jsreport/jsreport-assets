@@ -89,4 +89,3 @@ export default class NewAssetModal extends Component {
     </div>
   }
 }
-

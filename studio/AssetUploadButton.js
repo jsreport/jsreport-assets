@@ -90,4 +90,3 @@ export default class AssetUploadButton extends Component {
     return this.renderUpload(true)
   }
 }
-

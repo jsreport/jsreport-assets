@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import Studio from 'jsreport-studio'
 
 export default class AssetProperties extends Component {
-
   static title (entity, entities) {
     return `asset ${entity.link ? '(link)' : ''}`
   }
@@ -27,4 +26,3 @@ export default class AssetProperties extends Component {
     )
   }
 }
-

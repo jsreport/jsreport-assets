@@ -66,7 +66,6 @@ export default class FileEditor extends Component {
       case 'woff2': return 'woff2'
       case 'eot': return 'embedded-opentype'
       default: return 'woff'
-
     }
   }
 
@@ -171,4 +170,3 @@ export default class FileEditor extends Component {
     </div>)
   }
 }
-
