@@ -437,6 +437,51 @@ describe('assets with express', function () {
         .expect('hello', done)
     }).catch(done)
   })
+
+  it('should return link based on the originalUrl with query string', function () {
+    reporter.options.assets.allowedFiles = 'foo.html'
+    return reporter.documentStore.collection('assets').insert({
+      name: 'foo.html',
+      content: 'hello'
+    }).then(function () {
+      return request(reporter.express.app)
+        .post('/api/report?a=b')
+        .set('host', 'localhost')
+        .send({
+          template: {
+            content: '{#asset foo.html @encoding=link}',
+            recipe: 'html',
+            engine: 'none'
+          }
+        })
+        .expect(200)
+    }).then(response => {
+      response.text.should.be.eql('http://localhost/assets/content/foo.html')
+    })
+  })
+
+  it('should return link based on the originalUrl and app path config', function () {
+    reporter.options.assets.allowedFiles = 'foo.html'
+    reporter.options.appPath = '/reporting'
+    return reporter.documentStore.collection('assets').insert({
+      name: 'foo.html',
+      content: 'hello'
+    }).then(function () {
+      return request(reporter.express.app)
+        .post('/api/report?a=b')
+        .set('host', 'localhost')
+        .send({
+          template: {
+            content: '{#asset foo.html @encoding=link}',
+            recipe: 'html',
+            engine: 'none'
+          }
+        })
+        .expect(200)
+    }).then(response => {
+      response.text.should.be.eql('http://localhost/reporting/assets/content/foo.html')
+    })
+  })
 })
 
 describe('isAssetPathValid', function () {
