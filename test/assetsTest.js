@@ -380,6 +380,19 @@ describe('assets', function () {
       })
     })
   })
+
+  it('should extract static asset and strip bom', function () {
+    reporter.options.assets = { allowedFiles: '**/*.*', searchOnDiskIfNotFoundInStore: true }
+    return reporter.render({
+      template: {
+        content: '{#asset test/testbom.html}',
+        recipe: 'html',
+        engine: 'none'
+      }
+    }).then(function (res) {
+      res.content.toString().should.be.eql('hello')
+    })
+  })
 })
 
 describe('assets with express', function () {

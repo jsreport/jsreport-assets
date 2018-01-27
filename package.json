@@ -43,7 +43,8 @@
     "node.extend": "2.0.0",
     "react-copy-to-clipboard": "4.3.0",
     "safe-buffer": "5.0.1",
-    "shortid": "2.2.8"
+    "shortid": "2.2.8",
+    "strip-bom-buf": "1.0.0"
   },
   "author": "Jan Blaha",
   "devDependencies": {
