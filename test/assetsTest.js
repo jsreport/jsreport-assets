@@ -335,6 +335,51 @@ describe('assets', function () {
       m.should.be.eql('ok')
     })
   })
+
+  it('should not duplicate shared helpers to the child requests', function () {
+    return reporter.documentStore.collection('assets').insert({
+      name: 'foo.html',
+      isSharedHelper: true,
+      content: 'function foo() { return "hello" }'
+    }).then(function () {
+      return reporter.render({
+        template: {
+          content: '{{:~foo()}}',
+          recipe: 'html',
+          engine: 'jsrender'
+        },
+        options: {
+          isChildRequest: true
+        }
+      }).catch(function (e) {
+        return 'ok'
+      }).then(function (m) {
+        m.should.be.eql('ok')
+      })
+    })
+  })
+
+  it('should add shared helpers to the requests from child template', function () {
+    return reporter.documentStore.collection('assets').insert({
+      name: 'foo.html',
+      isSharedHelper: true,
+      content: 'function foo() { return "hello" }'
+    }).then(function () {
+      return reporter.render({
+        template: {
+          content: '{{:~foo()}}',
+          recipe: 'html',
+          engine: 'jsrender'
+        },
+        options: {
+          isChildRequest: true,
+          isChildTemplateRequest: true
+        }
+      }).then(function (res) {
+        res.content.toString().should.containEql('hello')
+      })
+    })
+  })
 })
 
 describe('assets with express', function () {
