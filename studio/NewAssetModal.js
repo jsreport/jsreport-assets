@@ -3,10 +3,6 @@ import AssetUploadButton from './AssetUploadButton.js'
 import Studio from 'jsreport-studio'
 
 export default class NewAssetModal extends Component {
-  static propTypes = {
-    close: PropTypes.func.isRequired
-  }
-
   constructor () {
     super()
     this.state = { isLink: false }
@@ -92,4 +88,8 @@ export default class NewAssetModal extends Component {
       </div>
     </div>
   }
+}
+
+NewAssetModal.propTypes = {
+  close: PropTypes.func.isRequired
 }
