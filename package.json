@@ -41,7 +41,7 @@
     "mime": "1.4.1",
     "minimatch": "3.0.4",
     "node.extend": "2.0.0",
-    "react-copy-to-clipboard": "5.0.1",
+    "react-copy-to-clipboard": "4.3.0",
     "safe-buffer": "5.1.1",
     "nanoid": "1.0.1",
     "strip-bom-buf": "1.0.0"
