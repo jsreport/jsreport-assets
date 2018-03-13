@@ -41,7 +41,7 @@
     "mime": "2.2.0",
     "minimatch": "3.0.4",
     "nanoid": "1.0.1",
-    "node.extend": "2.0.0",    
+    "node.extend": "2.0.0",
     "strip-bom-buf": "1.0.0"
   },
   "author": "Jan Blaha",
