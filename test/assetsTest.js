@@ -7,7 +7,7 @@ describe('assets', function () {
   let reporter
 
   beforeEach(() => {
-    reporter = Reporter({ tasks: { strategy: 'in-process' } })
+    reporter = Reporter({ templatingEngines: { strategy: 'in-process' } })
       .use(require('jsreport-express')())
       .use(require('jsreport-templates')())
       .use(require('jsreport-jsrender')())
@@ -172,7 +172,7 @@ describe('assets', function () {
   })
 
   it('should be able to link external file and extract it', async () => {
-    reporter.options.assets = { allowedFiles: '**/test.html' }
+    reporter.assets.options.allowedFiles = '**/test.html'
     await reporter.documentStore.collection('assets').insert({
       name: 'test.html',
       link: 'test/test.html'
@@ -189,7 +189,7 @@ describe('assets', function () {
   })
 
   it('should be able to link external file as base64 and extract it', async () => {
-    reporter.options.assets = { allowedFiles: '**/test.html' }
+    reporter.assets.options.allowedFiles = '**/test.html'
     await reporter.documentStore.collection('assets').insert({
       name: 'test.html',
       link: 'test/test.html'
@@ -235,8 +235,8 @@ describe('assets', function () {
   })
 
   it('should find assets on disk if not found in store but searchOnDiskIfNotFoundInStore is true', async () => {
-    reporter.options.assets.searchOnDiskIfNotFoundInStore = true
-    reporter.options.assets.allowedFiles = 'test/test.html'
+    reporter.assets.options.searchOnDiskIfNotFoundInStore = true
+    reporter.assets.options.allowedFiles = 'test/test.html'
 
     const res = await reporter.render({
       template: {
@@ -249,7 +249,7 @@ describe('assets', function () {
   })
 
   it('should escape js string when encoding string', async () => {
-    reporter.options.assets.allowedFiles = 'test/helpers.js'
+    reporter.assets.options.allowedFiles = 'test/helpers.js'
 
     await reporter.documentStore.collection('assets').insert({
       name: 'helpers.js',
@@ -269,8 +269,8 @@ describe('assets', function () {
   })
 
   it('should return link based on rootUrlForLinks if encoding is link', async () => {
-    reporter.options.assets.allowedFiles = 'test/helpers.js'
-    reporter.options.assets.rootUrlForLinks = 'http://localhost:123'
+    reporter.assets.options.allowedFiles = 'test/helpers.js'
+    reporter.assets.options.rootUrlForLinks = 'http://localhost:123'
 
     await reporter.documentStore.collection('assets').insert({
       name: 'helpers.js',
@@ -287,7 +287,7 @@ describe('assets', function () {
   })
 
   it('should return link based on localhost if not rootUrlForLinks and not url', async () => {
-    reporter.options.assets.allowedFiles = 'test/helpers.js'
+    reporter.assets.options.allowedFiles = 'test/helpers.js'
 
     await reporter.documentStore.collection('assets').insert({
       name: 'helpers.js',
@@ -337,7 +337,8 @@ describe('assets', function () {
   })
 
   it('should extract static asset and strip bom', async () => {
-    reporter.options.assets = { allowedFiles: '**/*.*', searchOnDiskIfNotFoundInStore: true }
+    reporter.assets.options.allowedFiles = '**/*.*'
+    reporter.assets.options.searchOnDiskIfNotFoundInStore = true
     const res = await reporter.render({
       template: {
         content: '{#asset test/testbom.html}',
@@ -383,7 +384,7 @@ describe('assets with express', function () {
   })
 
   it('/assets/content/test.html should return content with correct headers for linked file', async () => {
-    reporter.options.assets = { allowedFiles: '**/test.html' }
+    reporter.assets.options.allowedFiles = '**/test.html'
     await reporter.documentStore.collection('assets').insert({
       name: 'test.html',
       link: 'test/test.html'
@@ -400,8 +401,8 @@ describe('assets with express', function () {
   })
 
   it('/assets/content/test/test.html) should return content with correct headers for external file', () => {
-    reporter.options.assets.searchOnDiskIfNotFoundInStore = true
-    reporter.options.assets.allowedFiles = 'test/test.html'
+    reporter.assets.options.searchOnDiskIfNotFoundInStore = true
+    reporter.assets.options.allowedFiles = 'test/test.html'
 
     return request(reporter.express.app)
       .get('/assets/content/test/test.html')
@@ -414,8 +415,8 @@ describe('assets with express', function () {
   })
 
   it('/assets/link/test/test.html should return link', () => {
-    reporter.options.assets.searchOnDiskIfNotFoundInStore = true
-    reporter.options.assets.allowedFiles = 'test/test.html'
+    reporter.assets.options.searchOnDiskIfNotFoundInStore = true
+    reporter.assets.options.allowedFiles = 'test/test.html'
 
     return request(reporter.express.app)
       .get('/assets/link/test/test.html')
@@ -424,8 +425,8 @@ describe('assets with express', function () {
   })
 
   it('/assets/content/test/test with space.html) should return content with correct headers for external file', () => {
-    reporter.options.assets.searchOnDiskIfNotFoundInStore = true
-    reporter.options.assets.allowedFiles = 'test/test with space.html'
+    reporter.assets.options.searchOnDiskIfNotFoundInStore = true
+    reporter.assets.options.allowedFiles = 'test/test with space.html'
 
     return request(reporter.express.app)
       .get('/assets/content/test/test with space.html')
@@ -451,7 +452,7 @@ describe('assets with express', function () {
   })
 
   it('should return link based on the originalUrl with query string', async () => {
-    reporter.options.assets.allowedFiles = 'foo.html'
+    reporter.assets.options.allowedFiles = 'foo.html'
     await reporter.documentStore.collection('assets').insert({
       name: 'foo.html',
       content: 'hello'
@@ -473,7 +474,7 @@ describe('assets with express', function () {
   })
 
   it('should return link based on the originalUrl and app path config', async () => {
-    reporter.options.assets.allowedFiles = 'foo.html'
+    reporter.assets.options.allowedFiles = 'foo.html'
     reporter.options.appPath = '/reporting'
 
     await reporter.documentStore.collection('assets').insert({
