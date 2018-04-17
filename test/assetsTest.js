@@ -361,6 +361,8 @@ describe('assets with express', function () {
     return reporter.init()
   })
 
+  afterEach(() => reporter.close())
+
   it('should expose odata endpoint', () => {
     return request(reporter.express.app)
       .get('/odata/assets')
