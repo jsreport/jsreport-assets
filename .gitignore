@@ -36,8 +36,9 @@ jspm_packages
 # Optional REPL history
 .node_repl_history
 
-.idea
-studio/main.js
+.vscode
+# temporary include
+# studio/main.js
 studio/main.js.map
 
 # jsreport configuration and files
