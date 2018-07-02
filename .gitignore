@@ -38,8 +38,8 @@ jspm_packages
 
 .vscode
 # temporary include
-studio/main.js
-studio/main.js.map
+# studio/main.js
+# studio/main.js.map
 
 # jsreport configuration and files
 dev.config.json
