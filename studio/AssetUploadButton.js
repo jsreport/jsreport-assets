@@ -10,8 +10,8 @@ export default class AssetUploadButton extends Component {
     _fileUploadButton.openFileDialog('edit')
   }
 
-  static OpenUploadNew () {
-    _fileUploadButton.openFileDialog('new')
+  static OpenUploadNew (defaults) {
+    _fileUploadButton.openFileDialog('new', defaults)
   }
 
   componentDidMount () {
@@ -23,6 +23,10 @@ export default class AssetUploadButton extends Component {
       return
     }
 
+    const assetDefaults = e.target.assetDefaults
+
+    delete e.target.assetDefaults
+
     const file = e.target.files[0]
     const reader = new FileReader()
 
@@ -33,12 +37,21 @@ export default class AssetUploadButton extends Component {
           await Studio.workspaces.save()
         }
 
-        let response = await Studio.api.post('/odata/assets', {
-          data: {
-            content: reader.result.substring(reader.result.indexOf('base64,') + 'base64,'.length),
-            name: file.name
-          }
+        let asset = {}
+
+        if (assetDefaults != null) {
+          asset = Object.assign(asset, assetDefaults)
+        }
+
+        asset = Object.assign(asset, {
+          content: reader.result.substring(reader.result.indexOf('base64,') + 'base64,'.length),
+          name: file.name
         })
+
+        let response = await Studio.api.post('/odata/assets', {
+          data: asset
+        })
+
         response.__entitySet = 'assets'
 
         Studio.addExistingEntity(response)
@@ -72,8 +85,14 @@ export default class AssetUploadButton extends Component {
     reader.readAsDataURL(file)
   }
 
-  openFileDialog (type) {
+  openFileDialog (type, defaults) {
     this.type = type
+
+    if (defaults) {
+      this.refs.file.assetDefaults = defaults
+    } else {
+      delete this.refs.file.assetDefaults
+    }
 
     this.refs.file.dispatchEvent(new MouseEvent('click', {
       'view': window,

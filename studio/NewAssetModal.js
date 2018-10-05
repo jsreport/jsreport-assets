@@ -26,6 +26,10 @@ export default class NewAssetModal extends Component {
       return this.setState({ error: 'name should include file extension, for example foo.js' })
     }
 
+    if (this.props.options.defaults != null) {
+      entity = Object.assign(entity, this.props.options.defaults)
+    }
+
     if (this.state.isLink) {
       entity.link = this.refs.link.value
     } else {
@@ -82,7 +86,7 @@ export default class NewAssetModal extends Component {
       <div className='button-bar'>
         <button
           className='button confirmation'
-          onClick={() => { this.props.close(); AssetUploadButton.OpenUploadNew() }}>Upload
+          onClick={() => { this.props.close(); AssetUploadButton.OpenUploadNew(this.props.options.defaults) }}>Upload
         </button>
         <button onClick={() => this.createAsset()} className={'button confirmation'}>Ok</button>
       </div>
