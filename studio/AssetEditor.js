@@ -60,6 +60,10 @@ export default class FileEditor extends Component {
     return entity.name.match(/\.(otf|woff|ttf|eot|woff2)$/) != null
   }
 
+  isPdf (entity) {
+    return entity.name.match(/\.(pdf)$/) != null
+  }
+
   getFormat (extension) {
     switch (extension) {
       case 'ttf': return 'truetype'
@@ -115,6 +119,12 @@ export default class FileEditor extends Component {
           make a type specimen book.
         </p>
       </div>
+    }
+
+    if (this.isPdf(entity)) {
+      return <div className='block' style={{height: '100%'}}><object style={{height: '100%'}} data={Studio.resolveUrl(`assets/content/${entity.name}?v=${new Date().getTime()}`)} type='application/pdf'>
+        <embed src={Studio.resolveUrl(`assets/content/${entity.name}?v=${new Date().getTime()}`)} type='application/pdf' />
+      </object></div>
     }
 
     let mode = parts[parts.length - 1]
