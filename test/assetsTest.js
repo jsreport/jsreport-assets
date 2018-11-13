@@ -348,6 +348,200 @@ describe('assets', function () {
     })
     res.content.toString().should.be.eql('hello')
   })
+
+  describe('folders', () => {
+    it('{#asset /folder1/folder2/foo.html}', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder1',
+        shortid: 'folder1'
+      })
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder2',
+        shortid: 'folder2',
+        folder: {
+          shortid: 'folder1'
+        }
+      })
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello',
+        folder: {
+          shortid: 'folder2'
+        }
+      })
+
+      const res = await reporter.render({
+        template: {
+          content: '{#asset /folder1/folder2/foo.html}',
+          recipe: 'html',
+          engine: 'none'
+        }
+      })
+      res.content.toString().should.be.eql('hello')
+    })
+
+    it('{#asset /foo.html}', async () => {
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello',
+        folder: {
+          shortid: 'folder2'
+        }
+      })
+
+      const res = await reporter.render({
+        template: {
+          content: '{#asset /foo.html}',
+          recipe: 'html',
+          engine: 'none'
+        }
+      })
+      res.content.toString().should.be.eql('hello')
+    })
+
+    it('{#asset /folder2/foo.html} with multiple assets foo.html in different folders', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder1',
+        shortid: 'folder1'
+      })
+
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder2',
+        shortid: 'folder2'
+      })
+
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello folder1',
+        folder: {
+          shortid: 'folder1'
+        }
+      })
+
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello folder2',
+        folder: {
+          shortid: 'folder2'
+        }
+      })
+
+      const res = await reporter.render({
+        template: {
+          content: '{#asset /folder2/foo.html}',
+          recipe: 'html',
+          engine: 'none'
+        }
+      })
+      res.content.toString().should.be.eql('hello folder2')
+    })
+
+    it('{#asset ../company/assets/foo.html}', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'company',
+        shortid: 'company'
+      })
+      await reporter.documentStore.collection('folders').insert({
+        name: 'assets',
+        shortid: 'assets',
+        folder: {
+          shortid: 'company'
+        }
+      })
+      await reporter.documentStore.collection('folders').insert({
+        name: 'templates',
+        shortid: 'templates',
+        folder: {
+          shortid: 'company'
+        }
+      })
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello',
+        folder: {
+          shortid: 'assets'
+        }
+      })
+      await reporter.documentStore.collection('templates').insert({
+        name: 'template',
+        content: '{#asset ../company/assets/foo.html}',
+        engine: 'none',
+        recipe: 'html',
+        folder: {
+          shortid: 'templates'
+        }
+      })
+
+      const res = await reporter.render({
+        template: {
+          name: 'template'
+        }
+      })
+      res.content.toString().should.be.eql('hello')
+    })
+
+    it('{#asset foo.html} should search in current folder prioritly', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder1',
+        shortid: 'folder1'
+      })
+      await reporter.documentStore.collection('templates').insert({
+        name: 'template',
+        content: '{#asset foo.html}',
+        engine: 'none',
+        recipe: 'html',
+        folder: {
+          shortid: 'folder1'
+        }
+      })
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'root'
+      })
+
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'folder1',
+        folder: {
+          shortid: 'folder1'
+        }
+      })
+
+      const res = await reporter.render({
+        template: {
+          name: 'template'
+        }
+      })
+      res.content.toString().should.be.eql('folder1')
+    })
+
+    it('{#asset foo.html} should resolve asset just by name if not found in current directory', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder1',
+        shortid: 'folder1'
+      })
+      await reporter.documentStore.collection('templates').insert({
+        name: 'template',
+        content: '{#asset foo.html}',
+        engine: 'none',
+        recipe: 'html',
+        folder: {
+          shortid: 'folder1'
+        }
+      })
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'root'
+      })
+
+      const res = await reporter.render({
+        template: {
+          name: 'template'
+        }
+      })
+      res.content.toString().should.be.eql('root')
+    })
+  })
 })
 
 describe('assets with express', function () {
