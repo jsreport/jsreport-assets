@@ -22,21 +22,18 @@ export default class FileEditor extends Component {
   async componentDidMount () {
     const { entity } = this.props
 
+    await Studio.saveEntity(entity._id)
+    const path = await Studio.api.get(`assets/path/${entity._id}`)
+
     var content = entity.content
     if (entity.link) {
-      try {
-        await Studio.saveEntity(entity._id)
-        const ab = await Studio.api.get(`assets/content/${entity.name}`, { responseType: 'arraybuffer' })
-        const str = String.fromCharCode.apply(null, new Uint8Array(ab))
-        const fixedStr = decodeURIComponent(escape(str))
-        content = btoa(unescape(encodeURIComponent(fixedStr)))
-      } catch (e) {
-        this.setState({ loadError: e })
-        throw e
-      }
+      const ab = await Studio.api.get(`assets/content/${path}`, { responseType: 'arraybuffer' })
+      const str = String.fromCharCode.apply(null, new Uint8Array(ab))
+      const fixedStr = decodeURIComponent(escape(str))
+      content = btoa(unescape(encodeURIComponent(fixedStr)))
     }
 
-    this.setState({ content: content })
+    this.setState({ content: content, path })
   }
 
   async componentDidUpdate (prevProps) {
@@ -73,31 +70,32 @@ export default class FileEditor extends Component {
     }
   }
 
-  getEmbeddingCode (entity) {
+  getEmbeddingCode (entity, path) {
     let parts = entity.name.split('.')
     let extension = parts[parts.length - 1]
 
     if (this.isImage(entity)) {
-      return '<img src="{#asset ' + entity.name + ' @encoding=dataURI}" />'
+      return `<img src="{#asset '${path}' @encoding=dataURI}" />`
     }
 
     if (this.isFont(entity)) {
       return `@font-face {
   font-family: '${parts[0]}';
-  src: url({#asset ${entity.name} @encoding=dataURI});
+  src: url({#asset ${path} @encoding=dataURI});
   format('${this.getFormat(extension)}');
 }`
     }
 
-    return '{#asset ' + entity.name + ' @encoding=utf8}'
+    return `{#asset '${path}' @encoding=utf8}`
   }
 
   renderEditor (entity) {
+    const { path } = this.state
     let parts = entity.name.split('.')
     let extension = parts[parts.length - 1]
 
     if (this.isImage(entity)) {
-      return <div style={{overflow: 'auto'}}><img src={Studio.resolveUrl(`assets/content/${entity.name}?v=${new Date().getTime()}`)}
+      return <div style={{overflow: 'auto'}}><img src={Studio.resolveUrl(`assets/content/${path}?v=${new Date().getTime()}`)}
         style={{display: 'block', margin: '3rem auto'}} /></div>
     }
 
@@ -105,7 +103,7 @@ export default class FileEditor extends Component {
       let newStyle = document.createElement('style')
       newStyle.appendChild(document.createTextNode(`@font-face {
          font-family: '${parts[0]}';
-         src: url('${Studio.resolveUrl('/assets/content/' + entity.name)}');
+         src: url('${Studio.resolveUrl('/assets/content/' + path)}');
          format('${extension === 'ttf' ? 'truetype' : 'woff'}');
         }`))
 
@@ -122,8 +120,8 @@ export default class FileEditor extends Component {
     }
 
     if (this.isPdf(entity)) {
-      return <div className='block' style={{height: '100%'}}><object style={{height: '100%'}} data={Studio.resolveUrl(`assets/content/${entity.name}?v=${new Date().getTime()}`)} type='application/pdf'>
-        <embed src={Studio.resolveUrl(`assets/content/${entity.name}?v=${new Date().getTime()}`)} type='application/pdf' />
+      return <div className='block' style={{height: '100%'}}><object style={{height: '100%'}} data={Studio.resolveUrl(`assets/content/${path}?v=${new Date().getTime()}`)} type='application/pdf'>
+        <embed src={Studio.resolveUrl(`assets/content/${path}?v=${new Date().getTime()}`)} type='application/pdf' />
       </object></div>
     }
 
@@ -146,8 +144,8 @@ export default class FileEditor extends Component {
 
   render () {
     const { entity } = this.props
-    const { link } = this.state
-    const downloadUrl = Studio.resolveUrl(`assets/content/${entity.name}?download=true`)
+    const { link, path } = this.state
+    const downloadUrl = Studio.resolveUrl(`assets/content/${path}?download=true`)
 
     const toolbarButtonStyle = {
       color: '#007ACC',
@@ -157,7 +155,7 @@ export default class FileEditor extends Component {
     return (<div className='block'>
       <div style={{padding: '0.6rem 0 0.4rem 0', backgroundColor: '#F6F6F6'}}>
         <div>
-          <CopyToClipboard text={this.getEmbeddingCode(entity)}>
+          <CopyToClipboard text={this.getEmbeddingCode(entity, path)}>
             <a className='button' style={toolbarButtonStyle} title='Coppy the embedding code to clipboard'>
               <i className='fa fa-clipboard' />
             </a>
