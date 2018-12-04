@@ -4,6 +4,7 @@ import Studio, { TextEditor } from 'jsreport-studio'
 import superagent from 'superagent'
 import Promise from 'bluebird'
 import CopyToClipboard from 'react-copy-to-clipboard'
+import binaryExtensions from 'binary-extensions'
 
 // Studio.api currently always open dialogs on failures and that is what we don't want, so arbitrary implementaiton here
 const getTextFromApi = (path) => {
@@ -89,6 +90,22 @@ export default class FileEditor extends Component {
     return `{#asset '${path}' @encoding=utf8}`
   }
 
+  renderBinary (entity) {
+    return <div className='custom-editor'>
+      <div>
+        <h1><i className='fa fa-file-o' /> {entity.name}</h1>
+      </div>
+      <div>
+        <a className='button confirmation' target='_blank' href={Studio.resolveUrl(`assets/content/${entity.name}?download=true`)} title='Download'>
+          <i className='fa fa-download' /> Download
+        </a>
+        <button className='button confirmation' onClick={() => AssetUploadButton.OpenUpload(false)}>
+          <i className='fa fa-upload' /> Upload
+        </button>
+      </div>
+    </div>
+  }
+
   renderEditor (entity) {
     const { path } = this.state
     let parts = entity.name.split('.')
@@ -123,6 +140,10 @@ export default class FileEditor extends Component {
       return <div className='block' style={{height: '100%'}}><object style={{height: '100%'}} data={Studio.resolveUrl(`assets/content/${path}?v=${new Date().getTime()}`)} type='application/pdf'>
         <embed src={Studio.resolveUrl(`assets/content/${path}?v=${new Date().getTime()}`)} type='application/pdf' />
       </object></div>
+    }
+
+    if (entity.name.split('.').length > 1 && binaryExtensions.includes(entity.name.split('.')[1])) {
+      return this.renderBinary(entity)
     }
 
     let mode = parts[parts.length - 1]
