@@ -541,6 +541,42 @@ describe('assets', function () {
       })
       res.content.toString().should.be.eql('root')
     })
+
+    it('should fail when multiple assets found', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'a',
+        shortid: 'a'
+      })
+
+      await reporter.documentStore.collection('folders').insert({
+        name: 'b',
+        shortid: 'b'
+      })
+
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello',
+        folder: {
+          shortid: 'a'
+        }
+      })
+
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello',
+        folder: {
+          shortid: 'b'
+        }
+      })
+
+      return reporter.render({
+        template: {
+          content: '{#asset foo.html}',
+          recipe: 'html',
+          engine: 'none'
+        }
+      }).should.be.rejected()
+    })
   })
 })
 
