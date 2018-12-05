@@ -32,6 +32,8 @@ export default class NewAssetModal extends Component {
 
     if (this.state.isLink) {
       entity.link = this.refs.link.value
+      const fragments = entity.link.split('/')
+      entity.name = fragments[fragments.length - 1]
     } else {
       entity.name = this.refs.name.value
     }

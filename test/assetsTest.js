@@ -548,7 +548,11 @@ describe('assets with express', function () {
   let reporter
 
   beforeEach(() => {
-    reporter = Reporter()
+    reporter = Reporter({
+      templatingEngines: {
+        strategy: 'in-process'
+      }
+    })
       .use(require('jsreport-express')())
       .use(require('../')())
 
@@ -571,6 +575,22 @@ describe('assets with express', function () {
 
     return request(reporter.express.app)
       .get('/assets/content/foo.html')
+      .expect(200)
+      .expect('Content-Type', 'text/html; charset=UTF-8')
+      .expect('Cache-Control', 'public, max-age=0')
+      .expect('Last-Modified', /.+/)
+      .expect('ETag', /.+/)
+      .expect('hello')
+  })
+
+  it('/assets/id/content/foo.html should return content with correct headers', async () => {
+    const asset = await reporter.documentStore.collection('assets').insert({
+      name: 'foo.html',
+      content: 'hello'
+    })
+
+    return request(reporter.express.app)
+      .get(`/assets/${asset._id}/content/foo.html`)
       .expect(200)
       .expect('Content-Type', 'text/html; charset=UTF-8')
       .expect('Cache-Control', 'public, max-age=0')
