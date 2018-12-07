@@ -350,7 +350,49 @@ describe('assets', function () {
   })
 
   describe('folders', () => {
-    it('{#asset /folder1/folder2/foo.html}', async () => {
+    it('should throw error when duplicated results are found', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'a',
+        shortid: 'a'
+      })
+
+      await reporter.documentStore.collection('folders').insert({
+        name: 'b',
+        shortid: 'b'
+      })
+
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello',
+        folder: {
+          shortid: 'a'
+        }
+      })
+
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello',
+        folder: {
+          shortid: 'b'
+        }
+      })
+
+      try {
+        await reporter.render({
+          template: {
+            content: '{#asset foo.html}',
+            recipe: 'html',
+            engine: 'none'
+          }
+        })
+
+        throw new Error('should have failed when duplicates are found')
+      } catch (e) {
+        e.message.includes('Duplicated assets').should.be.true()
+      }
+    })
+
+    it('should resolve asset using folders absolute path {#asset /folder1/folder2/foo.html}', async () => {
       await reporter.documentStore.collection('folders').insert({
         name: 'folder1',
         shortid: 'folder1'
@@ -380,13 +422,10 @@ describe('assets', function () {
       res.content.toString().should.be.eql('hello')
     })
 
-    it('{#asset /foo.html}', async () => {
+    it('should resolve asset using folders absolute path {#asset /foo.html}', async () => {
       await reporter.documentStore.collection('assets').insert({
         name: 'foo.html',
-        content: 'hello',
-        folder: {
-          shortid: 'folder2'
-        }
+        content: 'hello'
       })
 
       const res = await reporter.render({
@@ -399,7 +438,7 @@ describe('assets', function () {
       res.content.toString().should.be.eql('hello')
     })
 
-    it('{#asset /folder2/foo.html} with multiple assets foo.html in different folders', async () => {
+    it('should resolve asset at specifed path {#asset /folder2/foo.html} when there are others with same name', async () => {
       await reporter.documentStore.collection('folders').insert({
         name: 'folder1',
         shortid: 'folder1'
@@ -436,7 +475,123 @@ describe('assets', function () {
       res.content.toString().should.be.eql('hello folder2')
     })
 
-    it('{#asset ../company/assets/foo.html}', async () => {
+    it('should resolve asset just by name {#asset foo.html} no matter its location if there is no other template with same name', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder1',
+        shortid: 'folder1'
+      })
+      await reporter.documentStore.collection('templates').insert({
+        name: 'template',
+        content: '{#asset foo.html}',
+        engine: 'none',
+        recipe: 'html',
+        folder: {
+          shortid: 'folder1'
+        }
+      })
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'root'
+      })
+
+      const res = await reporter.render({
+        template: {
+          name: 'template'
+        }
+      })
+      res.content.toString().should.be.eql('root')
+    })
+
+    it('should resolve asset just by name {#asset foo.html} no matter its location if there is no other template with same name (from anonymous template)', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder1',
+        shortid: 'folder1'
+      })
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'foo',
+        folder: { shortid: 'folder1' }
+      })
+
+      const res = await reporter.render({
+        template: {
+          content: '{#asset foo.html}',
+          engine: 'none',
+          recipe: 'html'
+        }
+      })
+      res.content.toString().should.be.eql('foo')
+    })
+
+    it('should prefer resolving to asset {#asset foo.html} that is in same folder level of rendered template', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder1',
+        shortid: 'folder1'
+      })
+      await reporter.documentStore.collection('templates').insert({
+        name: 'template',
+        content: '{#asset foo.html}',
+        engine: 'none',
+        recipe: 'html',
+        folder: {
+          shortid: 'folder1'
+        }
+      })
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'root'
+      })
+
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'folder1',
+        folder: {
+          shortid: 'folder1'
+        }
+      })
+
+      const res = await reporter.render({
+        template: {
+          name: '/folder1/template'
+        }
+      })
+      res.content.toString().should.be.eql('folder1')
+    })
+
+    it('should resolve asset using folders absolute path {#asset /folder1/foo.html} from nested template', async () => {
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder1',
+        shortid: 'folder1'
+      })
+
+      await reporter.documentStore.collection('folders').insert({
+        name: 'folder2',
+        shortid: 'folder2'
+      })
+
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'foo',
+        folder: { shortid: 'folder1' }
+      })
+
+      await reporter.documentStore.collection('templates').insert({
+        name: 't1',
+        content: '{#asset /folder1/foo.html}',
+        engine: 'none',
+        recipe: 'html',
+        folder: {
+          shortid: 'folder2'
+        }
+      })
+
+      const res = await reporter.render({
+        template: { name: '/folder2/t1', engine: 'none', recipe: 'html' }
+      })
+      res.content.toString().should.be.eql('foo')
+    })
+
+    it('should resolve asset using folders relative path {#asset ../company/assets/foo.html}', async () => {
       await reporter.documentStore.collection('folders').insert({
         name: 'company',
         shortid: 'company'
@@ -480,102 +635,102 @@ describe('assets', function () {
       res.content.toString().should.be.eql('hello')
     })
 
-    it('{#asset foo.html} should search in current folder prioritly', async () => {
+    it('should resolve asset using folders relative path {#asset assets/foo.html}', async () => {
       await reporter.documentStore.collection('folders').insert({
-        name: 'folder1',
-        shortid: 'folder1'
+        name: 'company',
+        shortid: 'company'
       })
-      await reporter.documentStore.collection('templates').insert({
-        name: 'template',
-        content: '{#asset foo.html}',
-        engine: 'none',
-        recipe: 'html',
+      await reporter.documentStore.collection('folders').insert({
+        name: 'assets',
+        shortid: 'assets',
         folder: {
-          shortid: 'folder1'
+          shortid: 'company'
         }
       })
       await reporter.documentStore.collection('assets').insert({
         name: 'foo.html',
-        content: 'root'
+        content: 'hello',
+        folder: {
+          shortid: 'assets'
+        }
       })
 
-      await reporter.documentStore.collection('assets').insert({
-        name: 'foo.html',
-        content: 'folder1',
+      await reporter.documentStore.collection('templates').insert({
+        name: 'template',
+        content: '{#asset assets/foo.html}',
+        engine: 'none',
+        recipe: 'html',
         folder: {
-          shortid: 'folder1'
+          shortid: 'company'
         }
       })
 
       const res = await reporter.render({
         template: {
-          name: 'template'
+          name: '/company/template'
         }
       })
-      res.content.toString().should.be.eql('folder1')
+      res.content.toString().should.be.eql('hello')
     })
 
-    it('{#asset foo.html} should resolve asset just by name if not found in current directory', async () => {
+    it('should resolve template name using folders relative path {#asset company/foo.html} from anonymous template', async () => {
       await reporter.documentStore.collection('folders').insert({
-        name: 'folder1',
-        shortid: 'folder1'
+        name: 'company',
+        shortid: 'company'
       })
-      await reporter.documentStore.collection('templates').insert({
-        name: 'template',
-        content: '{#asset foo.html}',
-        engine: 'none',
-        recipe: 'html',
+      await reporter.documentStore.collection('folders').insert({
+        name: 'assets',
+        shortid: 'assets',
         folder: {
-          shortid: 'folder1'
+          shortid: 'company'
         }
       })
       await reporter.documentStore.collection('assets').insert({
         name: 'foo.html',
-        content: 'root'
+        content: 'hello',
+        folder: {
+          shortid: 'assets'
+        }
       })
 
       const res = await reporter.render({
         template: {
-          name: 'template'
+          content: '{#asset company/assets/foo.html}',
+          engine: 'none',
+          recipe: 'html'
         }
       })
-      res.content.toString().should.be.eql('root')
+      res.content.toString().should.be.eql('hello')
     })
 
-    it('should fail when multiple assets found', async () => {
-      await reporter.documentStore.collection('folders').insert({
-        name: 'a',
-        shortid: 'a'
-      })
+    it('should throw error when using invalid paths', async () => {
+      try {
+        await reporter.render({
+          template: {
+            content: '{#asset /}',
+            engine: 'none',
+            recipe: 'html'
+          }
+        })
 
-      await reporter.documentStore.collection('folders').insert({
-        name: 'b',
-        shortid: 'b'
-      })
+        throw new Error('should have failed when passing invalid path')
+      } catch (e) {
+        e.message.includes('Invalid asset path').should.be.true()
+      }
 
-      await reporter.documentStore.collection('assets').insert({
-        name: 'foo.html',
-        content: 'hello',
-        folder: {
-          shortid: 'a'
-        }
-      })
+      try {
+        await reporter.render({
+          template: {
+            content: '{#asset ///}',
+            engine: 'none',
+            recipe: 'html'
+          }
+        })
 
-      await reporter.documentStore.collection('assets').insert({
-        name: 'foo.html',
-        content: 'hello',
-        folder: {
-          shortid: 'b'
-        }
-      })
-
-      return reporter.render({
-        template: {
-          content: '{#asset foo.html}',
-          recipe: 'html',
-          engine: 'none'
-        }
-      }).should.be.rejected()
+        throw new Error('should have failed when passing invalid path')
+      } catch (e) {
+        e.message.includes('Invalid asset path').should.be.true()
+      }
     })
   })
 })
