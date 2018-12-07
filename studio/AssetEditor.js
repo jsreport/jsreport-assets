@@ -32,7 +32,7 @@ export default class FileEditor extends Component {
       content = btoa(unescape(encodeURIComponent(fixedStr)))
     }
 
-    this.setState({ content })
+    this.setState({ content, loadingFinished: true })
   }
 
   async componentDidUpdate (prevProps) {
@@ -162,12 +162,16 @@ export default class FileEditor extends Component {
 
   render () {
     const { entity } = this.props
-    const { link } = this.state
+    const { link, loadingFinished } = this.state
     const downloadUrl = Studio.resolveUrl(`assets/${entity._id}/content?download=true`)
 
     const toolbarButtonStyle = {
       color: '#007ACC',
       fontSize: '1.2rem'
+    }
+
+    if (!loadingFinished) {
+      return <div />
     }
 
     return (<div className='block'>
