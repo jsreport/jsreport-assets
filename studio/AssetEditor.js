@@ -24,6 +24,7 @@ export default class FileEditor extends Component {
     const { entity } = this.props
 
     var content = entity.content
+
     if (entity.link) {
       await Studio.saveEntity(entity._id)
       const ab = await Studio.api.get(`assets/${entity._id}/content`, { responseType: 'arraybuffer' })
@@ -38,9 +39,9 @@ export default class FileEditor extends Component {
   async componentDidUpdate (prevProps) {
     const { entity } = this.props
 
-    if (entity.link && (!this.state.link || prevProps.entity.link !== entity.link) && !this.state.loadFailed) {
+    if (entity.link && (!this.state.link || prevProps.entity.link !== entity.link)) {
       try {
-        const link = await getTextFromApi(`assets/link/${entity.link}`)
+        const link = await getTextFromApi(`assets/link/${encodeURIComponent(entity.link)}`)
         this.setState({ link: link })
       } catch (e) {
         this.setState({ link: e.message })
@@ -182,16 +183,17 @@ export default class FileEditor extends Component {
               <i className='fa fa-clipboard' />
             </a>
           </CopyToClipboard>
-
           <a className='button' style={toolbarButtonStyle} target='_blank' href={downloadUrl} title='Download asset'>
             <i className='fa fa-download' />
           </a>
-          {entity.link
-            ? <span style={{margin: '0.6rem'}}>{link}</span> : <a className='button' style={toolbarButtonStyle} title='Upload asset'
-              onClick={() => AssetUploadButton.OpenUpload()}><i
-                className='fa fa-upload' /></a>}
-          <a className='button' style={{...toolbarButtonStyle, marginRight: 'auto'}} target='_blank' title='Help'
-            href='http://jsreport.net/learn/assets'>
+          {entity.link ? (
+            <span style={{ margin: '0.6rem' }}>{link}</span>
+          ) : (
+            <a className='button' style={toolbarButtonStyle} title='Upload asset' onClick={() => AssetUploadButton.OpenUpload()}>
+              <i className='fa fa-upload' />
+            </a>
+          )}
+          <a className='button' style={{...toolbarButtonStyle, marginRight: 'auto'}} target='_blank' title='Help' href='http://jsreport.net/learn/assets'>
             <i className='fa fa-question' />
           </a>
         </div>
