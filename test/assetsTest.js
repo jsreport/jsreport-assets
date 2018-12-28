@@ -215,6 +215,40 @@ describe('assets', function () {
     })
   })
 
+  it('should deny insert of external files when "allowAssetsLinkedToFiles" is false', async () => {
+    reporter.assets.options.allowedFiles = '**/*.*'
+    reporter.assets.options.allowAssetsLinkedToFiles = false
+
+    return reporter.documentStore.collection('assets').insert({
+      name: 'test.html',
+      link: 'test/test.html'
+    }).then(() => {
+      throw new Error('it should have failed')
+    }, () => {})
+  })
+
+  it('should deny update of external files when "allowAssetsLinkedToFiles" is false', async () => {
+    reporter.assets.options.allowedFiles = '**/test.html'
+    reporter.assets.options.allowAssetsLinkedToFiles = true
+
+    const asset = await reporter.documentStore.collection('assets').insert({
+      name: 'test.html',
+      link: 'test/test.html'
+    })
+
+    reporter.assets.options.allowAssetsLinkedToFiles = false
+
+    return reporter.documentStore.collection('assets').update({
+      _id: asset._id
+    }, {
+      $set: {
+        link: 'test/testbom.html'
+      }
+    }).then(() => {
+      throw new Error('it should have failed')
+    }, () => {})
+  })
+
   it('should extract assets also from scripts', async () => {
     await reporter.documentStore.collection('assets').insert({
       name: 'foo.json',
