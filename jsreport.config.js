@@ -8,7 +8,7 @@ module.exports = {
         type: 'object',
         properties: {
           allowedFiles: { type: 'string' },
-          allowAssetsLinkedToFiles: { type: 'boolean', $exposeToApi: true },
+          allowAssetsLinkedToFiles: { type: 'boolean' },
           searchOnDiskIfNotFoundInStore: { type: 'boolean' },
           rootUrlForLinks: { type: 'string' },
           publicAccessEnabled: { type: 'boolean' }
