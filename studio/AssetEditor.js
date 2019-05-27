@@ -6,6 +6,8 @@ import Promise from 'bluebird'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import binaryExtensions from 'binary-extensions'
 
+binaryExtensions.push('p12')
+
 // Studio.api currently always open dialogs on failures and that is what we don't want, so arbitrary implementaiton here
 const getTextFromApi = (path) => {
   return new Promise((resolve, reject) => {
