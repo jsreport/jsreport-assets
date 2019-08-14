@@ -5,6 +5,7 @@ import superagent from 'superagent'
 import Promise from 'bluebird'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import binaryExtensions from 'binary-extensions'
+import style from './AssetEditor.scss'
 
 binaryExtensions.push('p12')
 
@@ -16,7 +17,7 @@ const getTextFromApi = (path) => {
   })
 }
 
-export default class FileEditor extends Component {
+class AssetEditor extends Component {
   constructor () {
     super()
     this.state = { }
@@ -92,19 +93,21 @@ export default class FileEditor extends Component {
   }
 
   renderBinary (entity) {
-    return <div className='custom-editor'>
-      <div>
-        <h1><i className='fa fa-file-o' /> {entity.name}</h1>
+    return (
+      <div className='custom-editor'>
+        <div>
+          <h1><i className='fa fa-file-o' /> {entity.name}</h1>
+        </div>
+        <div>
+          <a className='button confirmation' target='_blank' href={Studio.resolveUrl(`assets/${entity._id}/content?download=true`)} title='Download'>
+            <i className='fa fa-download' /> Download
+          </a>
+          <button className='button confirmation' onClick={() => AssetUploadButton.OpenUpload(false)}>
+            <i className='fa fa-upload' /> Upload
+          </button>
+        </div>
       </div>
-      <div>
-        <a className='button confirmation' target='_blank' href={Studio.resolveUrl(`assets/${entity._id}/content?download=true`)} title='Download'>
-          <i className='fa fa-download' /> Download
-        </a>
-        <button className='button confirmation' onClick={() => AssetUploadButton.OpenUpload(false)}>
-          <i className='fa fa-upload' /> Upload
-        </button>
-      </div>
-    </div>
+    )
   }
 
   renderEditor (entity) {
@@ -112,12 +115,19 @@ export default class FileEditor extends Component {
     let extension = parts[parts.length - 1]
 
     if (this.isImage(entity)) {
-      return <div style={{overflow: 'auto'}}><img src={Studio.resolveUrl(`assets/${entity._id}/content?v=${new Date().getTime()}`)}
-        style={{display: 'block', margin: '3rem auto'}} /></div>
+      return (
+        <div style={{overflow: 'auto'}}>
+          <img
+            src={Studio.resolveUrl(`assets/${entity._id}/content?v=${new Date().getTime()}`)}
+            style={{display: 'block', margin: '3rem auto'}}
+          />
+        </div>
+      )
     }
 
     if (this.isFont(entity)) {
       let newStyle = document.createElement('style')
+
       newStyle.appendChild(document.createTextNode(`@font-face {
          font-family: '${parts[0]}';
          src: url('${Studio.resolveUrl(`/assets/${entity._id}/content`)}');
@@ -126,20 +136,30 @@ export default class FileEditor extends Component {
 
       document.head.appendChild(newStyle)
 
-      return <div style={{overflow: 'auto', fontFamily: parts[0], padding: '2rem'}}><h1> Hello world font {entity.name}</h1>
+      return (
+        <div style={{overflow: 'auto', fontFamily: parts[0], padding: '2rem'}}><h1> Hello world font {entity.name}</h1>
 
-        <p>
-          Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's
-          standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to
-          make a type specimen book.
-        </p>
-      </div>
+          <p>
+            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's
+            standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to
+            make a type specimen book.
+          </p>
+        </div>
+      )
     }
 
     if (this.isPdf(entity)) {
-      return <div className='block' style={{height: '100%'}}><object style={{height: '100%'}} data={Studio.resolveUrl(`assets/${entity._id}/content?v=${new Date().getTime()}`)} type='application/pdf'>
-        <embed src={Studio.resolveUrl(`assets/${entity._id}/content?v=${new Date().getTime()}`)} type='application/pdf' />
-      </object></div>
+      return (
+        <div className='block' style={{height: '100%'}}>
+          <object style={{height: '100%'}} data={Studio.resolveUrl(`assets/${entity._id}/content?v=${new Date().getTime()}`)} type='application/pdf'>
+            <embed src={Studio.resolveUrl(`assets/${entity._id}/content?v=${new Date().getTime()}`)} type='application/pdf' />
+          </object>
+        </div>
+      )
+    }
+
+    if (this.isOfficeFile(entity)) {
+      return <OfficeAssetEditor />
     }
 
     if (entity.name.split('.').length > 1 && binaryExtensions.includes(entity.name.split('.')[1])) {
@@ -147,20 +167,25 @@ export default class FileEditor extends Component {
     }
 
     let mode = parts[parts.length - 1]
+
     if (extension === 'js') {
       mode = 'javascript'
     }
+
     if (extension === 'html') {
       mode = 'handlebars'
     }
 
     const content = ((entity.content || entity.forceUpdate) ? entity.content : this.state.content) || ''
 
-    return <TextEditor
-      name={entity._id}
-      mode={mode}
-      value={decodeURIComponent(escape(atob(content)))}
-      onUpdate={(v) => this.props.onUpdate(Object.assign({}, entity, {content: btoa(unescape(encodeURIComponent(v))), forceUpdate: true}))} />
+    return (
+      <TextEditor
+        name={entity._id}
+        mode={mode}
+        value={decodeURIComponent(escape(atob(content)))}
+        onUpdate={(v) => this.props.onUpdate(Object.assign({}, entity, {content: btoa(unescape(encodeURIComponent(v))), forceUpdate: true}))}
+      />
+    )
   }
 
   render () {
@@ -168,39 +193,38 @@ export default class FileEditor extends Component {
     const { link, loadingFinished } = this.state
     const downloadUrl = Studio.resolveUrl(`assets/${entity._id}/content?download=true`)
 
-    const toolbarButtonStyle = {
-      color: '#007ACC',
-      fontSize: '1.2rem'
-    }
-
     if (!loadingFinished) {
       return <div />
     }
 
-    return (<div className='block'>
-      <div style={{padding: '0.6rem 0 0.4rem 0', backgroundColor: '#F6F6F6'}}>
-        <div>
-          <CopyToClipboard text={this.getEmbeddingCode(entity)}>
-            <a className='button' style={toolbarButtonStyle} title='Coppy the embedding code to clipboard'>
-              <i className='fa fa-clipboard' />
+    return (
+      <div className='block'>
+        <div style={{padding: '0.6rem 0 0.4rem 0', backgroundColor: '#F6F6F6'}}>
+          <div>
+            <CopyToClipboard text={this.getEmbeddingCode(entity)}>
+              <a className={`button ${style.toolbarButton}`} title='Coppy the embedding code to clipboard'>
+                <i className='fa fa-clipboard' />
+              </a>
+            </CopyToClipboard>
+            <a className={`button ${style.toolbarButton}`} target='_blank' href={downloadUrl} title='Download asset'>
+              <i className='fa fa-download' />
             </a>
-          </CopyToClipboard>
-          <a className='button' style={toolbarButtonStyle} target='_blank' href={downloadUrl} title='Download asset'>
-            <i className='fa fa-download' />
-          </a>
-          {entity.link ? (
-            <span style={{ margin: '0.6rem' }}>{link}</span>
-          ) : (
-            <a className='button' style={toolbarButtonStyle} title='Upload asset' onClick={() => AssetUploadButton.OpenUpload()}>
-              <i className='fa fa-upload' />
+            {entity.link ? (
+              <span style={{ margin: '0.6rem' }}>{link}</span>
+            ) : (
+              <a className={`button ${style.toolbarButton}`} title='Upload asset' onClick={() => AssetUploadButton.OpenUpload()}>
+                <i className='fa fa-upload' />
+              </a>
+            )}
+            <a className={`button ${style.toolbarButton}`} style={{ marginRight: 'auto' }} target='_blank' title='Help' href='http://jsreport.net/learn/assets'>
+              <i className='fa fa-question' />
             </a>
-          )}
-          <a className='button' style={{...toolbarButtonStyle, marginRight: 'auto'}} target='_blank' title='Help' href='http://jsreport.net/learn/assets'>
-            <i className='fa fa-question' />
-          </a>
+          </div>
         </div>
+        {this.renderEditor(entity)}
       </div>
-      {this.renderEditor(entity)}
-    </div>)
+    )
   }
 }
+
+export default AssetEditor
