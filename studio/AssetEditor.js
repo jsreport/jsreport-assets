@@ -4,6 +4,7 @@ import Studio, { TextEditor } from 'jsreport-studio'
 import superagent from 'superagent'
 import Promise from 'bluebird'
 import CopyToClipboard from 'react-copy-to-clipboard'
+import OfficeAssetEditor from './OfficeAssetEditor'
 import binaryExtensions from 'binary-extensions'
 import style from './AssetEditor.scss'
 
@@ -50,6 +51,10 @@ class AssetEditor extends Component {
         this.setState({ link: e.message })
       }
     }
+  }
+
+  isOfficeFile (entity) {
+    return entity.name.match(/\.(docx|xlsx|pptx)$/) != null
   }
 
   isImage (entity) {
@@ -102,7 +107,7 @@ class AssetEditor extends Component {
           <a className='button confirmation' target='_blank' href={Studio.resolveUrl(`assets/${entity._id}/content?download=true`)} title='Download'>
             <i className='fa fa-download' /> Download
           </a>
-          <button className='button confirmation' onClick={() => AssetUploadButton.OpenUpload(false)}>
+          <button className='button confirmation' onClick={() => AssetUploadButton.OpenUpload()}>
             <i className='fa fa-upload' /> Upload
           </button>
         </div>
@@ -138,7 +143,6 @@ class AssetEditor extends Component {
 
       return (
         <div style={{overflow: 'auto', fontFamily: parts[0], padding: '2rem'}}><h1> Hello world font {entity.name}</h1>
-
           <p>
             Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's
             standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to
@@ -159,7 +163,7 @@ class AssetEditor extends Component {
     }
 
     if (this.isOfficeFile(entity)) {
-      return <OfficeAssetEditor />
+      return <OfficeAssetEditor entity={entity} />
     }
 
     if (entity.name.split('.').length > 1 && binaryExtensions.includes(entity.name.split('.')[1])) {
@@ -197,30 +201,34 @@ class AssetEditor extends Component {
       return <div />
     }
 
+    let customEditor = this.isOfficeFile(entity)
+
     return (
       <div className='block'>
-        <div style={{padding: '0.6rem 0 0.4rem 0', backgroundColor: '#F6F6F6'}}>
-          <div>
-            <CopyToClipboard text={this.getEmbeddingCode(entity)}>
-              <a className={`button ${style.toolbarButton}`} title='Coppy the embedding code to clipboard'>
-                <i className='fa fa-clipboard' />
+        {!customEditor && (
+          <div className={style.toolbarContainer}>
+            <div>
+              <CopyToClipboard text={this.getEmbeddingCode(entity)}>
+                <a className={`button ${style.toolbarButton}`} title='Coppy the embedding code to clipboard'>
+                  <i className='fa fa-clipboard' />
+                </a>
+              </CopyToClipboard>
+              <a className={`button ${style.toolbarButton}`} target='_blank' href={downloadUrl} title='Download asset'>
+                <i className='fa fa-download' />
               </a>
-            </CopyToClipboard>
-            <a className={`button ${style.toolbarButton}`} target='_blank' href={downloadUrl} title='Download asset'>
-              <i className='fa fa-download' />
-            </a>
-            {entity.link ? (
-              <span style={{ margin: '0.6rem' }}>{link}</span>
-            ) : (
-              <a className={`button ${style.toolbarButton}`} title='Upload asset' onClick={() => AssetUploadButton.OpenUpload()}>
-                <i className='fa fa-upload' />
+              {entity.link ? (
+                <span style={{ margin: '0.6rem' }}>{link}</span>
+              ) : (
+                <a className={`button ${style.toolbarButton}`} title='Upload asset' onClick={() => AssetUploadButton.OpenUpload()}>
+                  <i className='fa fa-upload' />
+                </a>
+              )}
+              <a className={`button ${style.toolbarButton}`} style={{ marginRight: 'auto' }} target='_blank' title='Help' href='http://jsreport.net/learn/assets'>
+                <i className='fa fa-question' />
               </a>
-            )}
-            <a className={`button ${style.toolbarButton}`} style={{ marginRight: 'auto' }} target='_blank' title='Help' href='http://jsreport.net/learn/assets'>
-              <i className='fa fa-question' />
-            </a>
+            </div>
           </div>
-        </div>
+        )}
         {this.renderEditor(entity)}
       </div>
     )

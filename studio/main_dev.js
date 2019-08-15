@@ -1,4 +1,5 @@
 import AssetEditor from './AssetEditor.js'
+import OfficeAssetEditor from './OfficeAssetEditor'
 import AssetUploadButton from './AssetUploadButton.js'
 import NewAssetModal from './NewAssetModal.js'
 import AssetProperties from './AssetProperties.js'
@@ -14,6 +15,9 @@ Studio.addEntitySet({
 })
 
 Studio.addEditorComponent('assets', AssetEditor)
+
+Studio.addEditorComponent('officeAsset', OfficeAssetEditor)
+
 Studio.addToolbarComponent(AssetUploadButton)
 Studio.addPropertiesComponent(AssetProperties.title, AssetProperties, (entity) => entity.__entitySet === 'assets')
 
