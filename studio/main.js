@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -153,8 +153,12 @@ var AssetUploadButton = function (_Component) {
       }
 
       var assetDefaults = e.target.assetDefaults;
+      var targetAsset = e.target.targetAsset;
+      var uploadCallback = e.target.uploadCallback;
 
       delete e.target.assetDefaults;
+      delete e.target.targetAsset;
+      delete e.target.uploadCallback;
 
       var file = e.target.files[0];
       var reader = new FileReader();
@@ -219,7 +223,7 @@ var AssetUploadButton = function (_Component) {
                 }
 
                 _jsreportStudio2.default.updateEntity({
-                  name: _this2.props.tab.entity.name,
+                  name: targetAsset.name,
                   content: reader.result.substring(reader.result.indexOf('base64,') + 'base64,'.length)
                 });
 
@@ -232,7 +236,7 @@ var AssetUploadButton = function (_Component) {
 
               case 21:
                 _context.next = 23;
-                return _jsreportStudio2.default.api.patch('/odata/assets(' + _this2.props.tab.entity._id + ')', {
+                return _jsreportStudio2.default.api.patch('/odata/assets(' + targetAsset._id + ')', {
                   data: {
                     content: reader.result.substring(reader.result.indexOf('base64,') + 'base64,'.length),
                     link: null
@@ -240,9 +244,15 @@ var AssetUploadButton = function (_Component) {
                 });
 
               case 23:
-                _jsreportStudio2.default.loadEntity(_this2.props.tab.entity._id, true);
+                _jsreportStudio2.default.loadEntity(targetAsset._id, true);
 
               case 24:
+
+                if (uploadCallback) {
+                  uploadCallback();
+                }
+
+              case 25:
               case 'end':
                 return _context.stop();
             }
@@ -251,7 +261,13 @@ var AssetUploadButton = function (_Component) {
       }));
 
       reader.onerror = function () {
-        alert('There was an error reading the file!');
+        var errMsg = 'There was an error reading the file!';
+
+        if (uploadCallback) {
+          uploadCallback(new Error(errMsg));
+        }
+
+        alert(errMsg);
       };
 
       reader.readAsDataURL(file);
@@ -259,12 +275,31 @@ var AssetUploadButton = function (_Component) {
   }, {
     key: 'openFileDialog',
     value: function openFileDialog(type, defaults) {
+      var opts = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      var targetAssetIdAndName = opts.targetAsset;
+
       this.type = type;
 
       if (defaults) {
         this.refs.file.assetDefaults = defaults;
       } else {
         delete this.refs.file.assetDefaults;
+      }
+
+      if (targetAssetIdAndName) {
+        this.refs.file.targetAsset = targetAssetIdAndName;
+      } else {
+        this.refs.file.targetAsset = {
+          _id: this.props.tab.entity._id,
+          name: this.props.tab.entity.name
+        };
+      }
+
+      if (opts.uploadCallback) {
+        this.refs.file.uploadCallback = opts.uploadCallback;
+      } else {
+        delete this.refs.file.uploadCallback;
       }
 
       this.refs.file.dispatchEvent(new MouseEvent('click', {
@@ -292,13 +327,13 @@ var AssetUploadButton = function (_Component) {
 
     // we need to have global action in main_dev which is triggered when users clicks on + on images
     // this triggers invisible button in the toolbar
-    value: function OpenUpload() {
-      _fileUploadButton.openFileDialog('edit');
+    value: function OpenUpload(opts) {
+      _fileUploadButton.openFileDialog('edit', undefined, opts);
     }
   }, {
     key: 'OpenUploadNew',
-    value: function OpenUploadNew(defaults) {
-      _fileUploadButton.openFileDialog('new', defaults);
+    value: function OpenUploadNew(defaults, opts) {
+      _fileUploadButton.openFileDialog('new', defaults, opts);
     }
   }]);
 
@@ -314,19 +349,260 @@ exports.default = AssetUploadButton;
 "use strict";
 
 
-var _AssetEditor = __webpack_require__(4);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-var _AssetEditor2 = _interopRequireDefault(_AssetEditor);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
 
 var _AssetUploadButton = __webpack_require__(2);
 
 var _AssetUploadButton2 = _interopRequireDefault(_AssetUploadButton);
 
-var _NewAssetModal = __webpack_require__(12);
+var _jsreportStudio = __webpack_require__(1);
+
+var _jsreportStudio2 = _interopRequireDefault(_jsreportStudio);
+
+var _AssetEditor = __webpack_require__(4);
+
+var _AssetEditor2 = _interopRequireDefault(_AssetEditor);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Preview = _jsreportStudio2.default.Preview;
+
+var OfficeAssetEditor = function (_Component) {
+  _inherits(OfficeAssetEditor, _Component);
+
+  function OfficeAssetEditor(props) {
+    _classCallCheck(this, OfficeAssetEditor);
+
+    var _this = _possibleConstructorReturn(this, (OfficeAssetEditor.__proto__ || Object.getPrototypeOf(OfficeAssetEditor)).call(this, props));
+
+    _this.state = {
+      loading: false,
+      previewOpen: false
+    };
+    return _this;
+  }
+
+  _createClass(OfficeAssetEditor, [{
+    key: 'isPreviewEnabled',
+    value: function isPreviewEnabled() {
+      return _jsreportStudio2.default.extensions.assets.options.officePreview.enabled !== false;
+    }
+  }, {
+    key: 'preview',
+    value: function preview(entity) {
+      var _this2 = this;
+
+      var previewEnabled = this.isPreviewEnabled();
+
+      if (!previewEnabled) {
+        return;
+      }
+
+      if (_jsreportStudio2.default.extensions.assets.options.officePreview.showWarning !== false && _jsreportStudio2.default.getSettingValueByKey('office-preview-informed', false) === false) {
+        _jsreportStudio2.default.setSetting('office-preview-informed', true);
+
+        _jsreportStudio2.default.openModal(function () {
+          return _react2.default.createElement(
+            'div',
+            null,
+            'We need to upload your office asset to our publicly hosted server to be able to use Office Online Service for previewing here in the studio. You can disable it in the configuration, see ',
+            _react2.default.createElement(
+              'a',
+              {
+                href: 'https://jsreport.net/learn/xlsx#preview-in-studio', target: '_blank' },
+              'the docs'
+            ),
+            ' for details.'
+          );
+        });
+      }
+
+      if (this.state.previewOpen) {
+        this.clearPreview(function () {
+          _this2.preview(entity);
+        });
+      } else {
+        _jsreportStudio2.default.startProgress();
+
+        this.setState({
+          loading: true,
+          previewOpen: true
+        });
+      }
+    }
+  }, {
+    key: 'clearPreview',
+    value: function clearPreview(done) {
+      this.setState({
+        previewOpen: false
+      }, function () {
+        return done && done();
+      });
+    }
+  }, {
+    key: 'onOfficeAssetLoad',
+    value: function onOfficeAssetLoad() {
+      _jsreportStudio2.default.stopProgress();
+
+      this.setState({
+        loading: false
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this3 = this;
+
+      var previewEnabled = this.isPreviewEnabled();
+      var _state = this.state,
+          loading = _state.loading,
+          previewOpen = _state.previewOpen;
+      var _props = this.props,
+          entity = _props.entity,
+          displayName = _props.displayName,
+          emptyMessage = _props.emptyMessage,
+          icon = _props.icon;
+
+
+      var visibleName = displayName;
+
+      if (!visibleName && entity) {
+        visibleName = entity.name;
+      }
+
+      if (!visibleName) {
+        visibleName = '<none>';
+      }
+
+      return _react2.default.createElement(
+        'div',
+        { className: 'block' },
+        _react2.default.createElement(
+          'div',
+          { className: _AssetEditor2.default.toolbarContainer },
+          _react2.default.createElement(
+            'h3',
+            { style: { display: 'inline-block', margin: '0px', marginLeft: '0.6rem' } },
+            _react2.default.createElement('i', { className: 'fa ' + (icon || 'fa-file-o') }),
+            ' ',
+            visibleName
+          ),
+          entity != null && _react2.default.createElement(
+            'a',
+            { className: 'button confirmation', target: '_blank', href: _jsreportStudio2.default.resolveUrl('assets/' + entity._id + '/content?download=true') },
+            _react2.default.createElement('i', { className: 'fa fa-download' }),
+            ' Download'
+          ),
+          entity != null && _react2.default.createElement(
+            'button',
+            { className: 'button confirmation', onClick: function onClick() {
+                return _AssetUploadButton2.default.OpenUpload({
+                  targetAsset: {
+                    _id: entity._id,
+                    name: entity.name
+                  },
+                  uploadCallback: function uploadCallback() {
+                    var wasOpen = _this3.state.previewOpen;
+
+                    _this3.clearPreview(function () {
+                      if (wasOpen) {
+                        _this3.preview(entity);
+                      }
+                    });
+                  }
+                });
+              } },
+            _react2.default.createElement('i', { className: 'fa fa-upload' }),
+            ' Upload'
+          ),
+          entity != null && _react2.default.createElement(
+            'button',
+            { className: 'button confirmation ' + (!previewEnabled || loading ? 'disabled' : ''), onClick: function onClick() {
+                return _this3.preview(entity);
+              } },
+            _react2.default.createElement('i', { className: 'fa fa-' + (loading ? '' : previewOpen ? 'retweet' : 'search') }),
+            ' ',
+            loading ? 'Loading..' : previewOpen ? 'Refresh' : 'Preview'
+          ),
+          entity != null && previewOpen && !loading && _react2.default.createElement(
+            'button',
+            { className: 'button confirmation ' + (!previewEnabled || loading ? 'disabled' : ''), onClick: function onClick() {
+                return _this3.clearPreview();
+              } },
+            _react2.default.createElement('i', { className: 'fa fa-times' }),
+            ' Clear'
+          )
+        ),
+        entity != null && previewOpen && _react2.default.createElement(Preview, {
+          ref: 'officeAssetPreview',
+          onLoad: function onLoad() {
+            return _this3.onOfficeAssetLoad();
+          },
+          initialSrc: _jsreportStudio2.default.resolveUrl('assets/office/' + entity._id + '/content')
+        }),
+        entity == null && _react2.default.createElement(
+          'div',
+          { style: { padding: '2rem' } },
+          _react2.default.createElement(
+            'i',
+            null,
+            emptyMessage != null ? emptyMessage : 'Asset is empty'
+          )
+        )
+      );
+    }
+  }]);
+
+  return OfficeAssetEditor;
+}(_react.Component);
+
+exports.default = OfficeAssetEditor;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
+module.exports = {"toolbarContainer":"ASSETS-AssetEditor-toolbarContainer","toolbarButton":"ASSETS-AssetEditor-toolbarButton"};
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _AssetEditor = __webpack_require__(6);
+
+var _AssetEditor2 = _interopRequireDefault(_AssetEditor);
+
+var _OfficeAssetEditor = __webpack_require__(3);
+
+var _OfficeAssetEditor2 = _interopRequireDefault(_OfficeAssetEditor);
+
+var _AssetUploadButton = __webpack_require__(2);
+
+var _AssetUploadButton2 = _interopRequireDefault(_AssetUploadButton);
+
+var _NewAssetModal = __webpack_require__(14);
 
 var _NewAssetModal2 = _interopRequireDefault(_NewAssetModal);
 
-var _AssetProperties = __webpack_require__(13);
+var _AssetProperties = __webpack_require__(15);
 
 var _AssetProperties2 = _interopRequireDefault(_AssetProperties);
 
@@ -348,6 +624,9 @@ _jsreportStudio2.default.addEntitySet({
 });
 
 _jsreportStudio2.default.addEditorComponent('assets', _AssetEditor2.default);
+
+_jsreportStudio2.default.addEditorComponent('officeAsset', _OfficeAssetEditor2.default);
+
 _jsreportStudio2.default.addToolbarComponent(_AssetUploadButton2.default);
 _jsreportStudio2.default.addPropertiesComponent(_AssetProperties2.default.title, _AssetProperties2.default, function (entity) {
   return entity.__entitySet === 'assets';
@@ -385,7 +664,7 @@ _jsreportStudio2.default.entityTreeIconResolvers.push(function (entity) {
 });
 
 /***/ }),
-/* 4 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -394,8 +673,6 @@ _jsreportStudio2.default.entityTreeIconResolvers.push(function (entity) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -411,21 +688,29 @@ var _jsreportStudio = __webpack_require__(1);
 
 var _jsreportStudio2 = _interopRequireDefault(_jsreportStudio);
 
-var _superagent = __webpack_require__(5);
+var _superagent = __webpack_require__(7);
 
 var _superagent2 = _interopRequireDefault(_superagent);
 
-var _bluebird = __webpack_require__(6);
+var _bluebird = __webpack_require__(8);
 
 var _bluebird2 = _interopRequireDefault(_bluebird);
 
-var _reactCopyToClipboard = __webpack_require__(7);
+var _reactCopyToClipboard = __webpack_require__(9);
 
 var _reactCopyToClipboard2 = _interopRequireDefault(_reactCopyToClipboard);
 
-var _binaryExtensions = __webpack_require__(11);
+var _OfficeAssetEditor = __webpack_require__(3);
+
+var _OfficeAssetEditor2 = _interopRequireDefault(_OfficeAssetEditor);
+
+var _binaryExtensions = __webpack_require__(13);
 
 var _binaryExtensions2 = _interopRequireDefault(_binaryExtensions);
+
+var _AssetEditor = __webpack_require__(4);
+
+var _AssetEditor2 = _interopRequireDefault(_AssetEditor);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -452,19 +737,19 @@ var getTextFromApi = function getTextFromApi(path) {
   });
 };
 
-var FileEditor = function (_Component) {
-  _inherits(FileEditor, _Component);
+var AssetEditor = function (_Component) {
+  _inherits(AssetEditor, _Component);
 
-  function FileEditor() {
-    _classCallCheck(this, FileEditor);
+  function AssetEditor() {
+    _classCallCheck(this, AssetEditor);
 
-    var _this = _possibleConstructorReturn(this, (FileEditor.__proto__ || Object.getPrototypeOf(FileEditor)).call(this));
+    var _this = _possibleConstructorReturn(this, (AssetEditor.__proto__ || Object.getPrototypeOf(AssetEditor)).call(this));
 
     _this.state = {};
     return _this;
   }
 
-  _createClass(FileEditor, [{
+  _createClass(AssetEditor, [{
     key: 'componentDidMount',
     value: function () {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -561,6 +846,11 @@ var FileEditor = function (_Component) {
       return componentDidUpdate;
     }()
   }, {
+    key: 'isOfficeFile',
+    value: function isOfficeFile(entity) {
+      return entity.name.match(/\.(docx|xlsx|pptx)$/) != null;
+    }
+  }, {
     key: 'isImage',
     value: function isImage(entity) {
       return entity.name.match(/\.(jpeg|jpg|gif|png|svg)$/) != null;
@@ -634,7 +924,7 @@ var FileEditor = function (_Component) {
           _react2.default.createElement(
             'button',
             { className: 'button confirmation', onClick: function onClick() {
-                return _AssetUploadButton2.default.OpenUpload(false);
+                return _AssetUploadButton2.default.OpenUpload();
               } },
             _react2.default.createElement('i', { className: 'fa fa-upload' }),
             ' Upload'
@@ -654,13 +944,16 @@ var FileEditor = function (_Component) {
         return _react2.default.createElement(
           'div',
           { style: { overflow: 'auto' } },
-          _react2.default.createElement('img', { src: _jsreportStudio2.default.resolveUrl('assets/' + entity._id + '/content?v=' + new Date().getTime()),
-            style: { display: 'block', margin: '3rem auto' } })
+          _react2.default.createElement('img', {
+            src: _jsreportStudio2.default.resolveUrl('assets/' + entity._id + '/content?v=' + new Date().getTime()),
+            style: { display: 'block', margin: '3rem auto' }
+          })
         );
       }
 
       if (this.isFont(entity)) {
         var newStyle = document.createElement('style');
+
         newStyle.appendChild(document.createTextNode('@font-face {\n         font-family: \'' + parts[0] + '\';\n         src: url(\'' + _jsreportStudio2.default.resolveUrl('/assets/' + entity._id + '/content') + '\');\n         format(\'' + (extension === 'ttf' ? 'truetype' : 'woff') + '\');\n        }'));
 
         document.head.appendChild(newStyle);
@@ -694,14 +987,20 @@ var FileEditor = function (_Component) {
         );
       }
 
+      if (this.isOfficeFile(entity)) {
+        return _react2.default.createElement(_OfficeAssetEditor2.default, { entity: entity });
+      }
+
       if (entity.name.split('.').length > 1 && _binaryExtensions2.default.includes(entity.name.split('.')[1])) {
         return this.renderBinary(entity);
       }
 
       var mode = parts[parts.length - 1];
+
       if (extension === 'js') {
         mode = 'javascript';
       }
+
       if (extension === 'html') {
         mode = 'handlebars';
       }
@@ -714,7 +1013,8 @@ var FileEditor = function (_Component) {
         value: decodeURIComponent(escape(atob(content))),
         onUpdate: function onUpdate(v) {
           return _this2.props.onUpdate(Object.assign({}, entity, { content: btoa(unescape(encodeURIComponent(v))), forceUpdate: true }));
-        } });
+        }
+      });
     }
   }, {
     key: 'render',
@@ -726,21 +1026,18 @@ var FileEditor = function (_Component) {
 
       var downloadUrl = _jsreportStudio2.default.resolveUrl('assets/' + entity._id + '/content?download=true');
 
-      var toolbarButtonStyle = {
-        color: '#007ACC',
-        fontSize: '1.2rem'
-      };
-
       if (!loadingFinished) {
         return _react2.default.createElement('div', null);
       }
 
+      var customEditor = this.isOfficeFile(entity);
+
       return _react2.default.createElement(
         'div',
         { className: 'block' },
-        _react2.default.createElement(
+        !customEditor && _react2.default.createElement(
           'div',
-          { style: { padding: '0.6rem 0 0.4rem 0', backgroundColor: '#F6F6F6' } },
+          { className: _AssetEditor2.default.toolbarContainer },
           _react2.default.createElement(
             'div',
             null,
@@ -749,13 +1046,13 @@ var FileEditor = function (_Component) {
               { text: this.getEmbeddingCode(entity) },
               _react2.default.createElement(
                 'a',
-                { className: 'button', style: toolbarButtonStyle, title: 'Coppy the embedding code to clipboard' },
+                { className: 'button ' + _AssetEditor2.default.toolbarButton, title: 'Coppy the embedding code to clipboard' },
                 _react2.default.createElement('i', { className: 'fa fa-clipboard' })
               )
             ),
             _react2.default.createElement(
               'a',
-              { className: 'button', style: toolbarButtonStyle, target: '_blank', href: downloadUrl, title: 'Download asset' },
+              { className: 'button ' + _AssetEditor2.default.toolbarButton, target: '_blank', href: downloadUrl, title: 'Download asset' },
               _react2.default.createElement('i', { className: 'fa fa-download' })
             ),
             entity.link ? _react2.default.createElement(
@@ -764,14 +1061,14 @@ var FileEditor = function (_Component) {
               link
             ) : _react2.default.createElement(
               'a',
-              { className: 'button', style: toolbarButtonStyle, title: 'Upload asset', onClick: function onClick() {
+              { className: 'button ' + _AssetEditor2.default.toolbarButton, title: 'Upload asset', onClick: function onClick() {
                   return _AssetUploadButton2.default.OpenUpload();
                 } },
               _react2.default.createElement('i', { className: 'fa fa-upload' })
             ),
             _react2.default.createElement(
               'a',
-              { className: 'button', style: _extends({}, toolbarButtonStyle, { marginRight: 'auto' }), target: '_blank', title: 'Help', href: 'http://jsreport.net/learn/assets' },
+              { className: 'button ' + _AssetEditor2.default.toolbarButton, style: { marginRight: 'auto' }, target: '_blank', title: 'Help', href: 'http://jsreport.net/learn/assets' },
               _react2.default.createElement('i', { className: 'fa fa-question' })
             )
           )
@@ -781,38 +1078,38 @@ var FileEditor = function (_Component) {
     }
   }]);
 
-  return FileEditor;
+  return AssetEditor;
 }(_react.Component);
 
-exports.default = FileEditor;
+exports.default = AssetEditor;
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = Studio.libraries['superagent'];
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = Studio.libraries['bluebird'];
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _require = __webpack_require__(8),
+var _require = __webpack_require__(10),
     CopyToClipboard = _require.CopyToClipboard;
 
 module.exports = CopyToClipboard;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -829,7 +1126,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _copyToClipboard = __webpack_require__(9);
+var _copyToClipboard = __webpack_require__(11);
 
 var _copyToClipboard2 = _interopRequireDefault(_copyToClipboard);
 
@@ -888,13 +1185,13 @@ exports.CopyToClipboard = CopyToClipboard;
 //# sourceMappingURL=Component.js.map
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var deselectCurrent = __webpack_require__(10);
+var deselectCurrent = __webpack_require__(12);
 
 var defaultMessage = 'Copy to clipboard: #{key}, Enter';
 
@@ -973,7 +1270,7 @@ module.exports = copy;
 
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports) {
 
 
@@ -1018,13 +1315,13 @@ module.exports = function () {
 
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module) {
 
 module.exports = ["3dm","3ds","3g2","3gp","7z","a","aac","adp","ai","aif","aiff","alz","ape","apk","ar","arj","asf","au","avi","bak","baml","bh","bin","bk","bmp","btif","bz2","bzip2","cab","caf","cgm","class","cmx","cpio","cr2","csv","cur","dat","dcm","deb","dex","djvu","dll","dmg","dng","doc","docm","docx","dot","dotm","dra","DS_Store","dsk","dts","dtshd","dvb","dwg","dxf","ecelp4800","ecelp7470","ecelp9600","egg","eol","eot","epub","exe","f4v","fbs","fh","fla","flac","fli","flv","fpx","fst","fvt","g3","gh","gif","graffle","gz","gzip","h261","h263","h264","icns","ico","ief","img","ipa","iso","jar","jpeg","jpg","jpgv","jpm","jxr","key","ktx","lha","lib","lvp","lz","lzh","lzma","lzo","m3u","m4a","m4v","mar","mdi","mht","mid","midi","mj2","mka","mkv","mmr","mng","mobi","mov","movie","mp3","mp4","mp4a","mpeg","mpg","mpga","mxu","nef","npx","numbers","o","oga","ogg","ogv","otf","pages","pbm","pcx","pdb","pdf","pea","pgm","pic","png","pnm","pot","potm","potx","ppa","ppam","ppm","pps","ppsm","ppsx","ppt","pptm","pptx","psd","pya","pyc","pyo","pyv","qt","rar","ras","raw","resources","rgb","rip","rlc","rmf","rmvb","rtf","rz","s3m","s7z","scpt","sgi","shar","sil","sketch","slk","smv","so","stl","sub","swf","tar","tbz","tbz2","tga","tgz","thmx","tif","tiff","tlz","ttc","ttf","txz","udf","uvh","uvi","uvm","uvp","uvs","uvu","viv","vob","war","wav","wax","wbmp","wdp","weba","webm","webp","whl","wim","wm","wma","wmv","wmx","woff","woff2","wrm","wvx","xbm","xif","xla","xlam","xls","xlsb","xlsm","xlsx","xlt","xltm","xltx","xm","xmind","xpi","xpm","xwd","xz","z","zip","zipx"];
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1283,7 +1580,7 @@ NewAssetModal.propTypes = {
 };
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

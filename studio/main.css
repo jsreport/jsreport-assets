@@ -1,0 +1,11 @@
+
+.ASSETS-AssetEditor-toolbarContainer {
+  padding: 0.6rem 0 0.4rem 0;
+  background-color: $secondary-backgroundColor;
+}
+
+.ASSETS-AssetEditor-toolbarButton {
+  font-size: 1.2rem;
+  color: $primary-selection-backgroundColor !important;
+}
+
