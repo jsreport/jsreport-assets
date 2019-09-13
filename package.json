@@ -53,7 +53,7 @@
     "jsreport-core": "2.6.1",
     "jsreport-express": "2.5.0",
     "jsreport-jsrender": "2.1.0",
-    "jsreport-scripts": "2.1.0",
+    "jsreport-scripts": "2.2.0",
     "jsreport-studio-dev": "github:jsreport/jsreport-studio-dev",
     "jsreport-templates": "2.3.1",
     "mocha": "5.2.0",

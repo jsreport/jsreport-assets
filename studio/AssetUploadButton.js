@@ -113,7 +113,7 @@ export default class AssetUploadButton extends Component {
 
     if (targetAssetIdAndName) {
       this.refs.file.targetAsset = targetAssetIdAndName
-    } else {
+    } else if (type !== 'new') {
       this.refs.file.targetAsset = {
         _id: this.props.tab.entity._id,
         name: this.props.tab.entity.name
