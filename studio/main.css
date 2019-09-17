@@ -4,8 +4,24 @@
   background-color: $secondary-backgroundColor;
 }
 
-.ASSETS-AssetEditor-toolbarButton {
-  font-size: 1.2rem;
-  color: $primary-selection-backgroundColor !important;
+.ASSETS-AssetEditor-toolbarRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.ASSETS-AssetEditor-toolbarRow > *,
+.ASSETS-AssetEditor-toolbarRow > .button {
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: auto;
+}
+
+.ASSETS-AssetEditor-toolbarAssetName {
+  display: inline-flex;
+  flex-direction: column;
+  margin: 0px;
+  margin-left: 0.6rem;
+  justify-content: center;
 }
 
