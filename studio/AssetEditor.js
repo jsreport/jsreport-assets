@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
 import AssetUploadButton from './AssetUploadButton.js'
-import Studio, { TextEditor } from 'jsreport-studio'
+import Studio, { Preview, TextEditor } from 'jsreport-studio'
 import superagent from 'superagent'
 import Promise from 'bluebird'
 import CopyToClipboard from 'react-copy-to-clipboard'
-import OfficeAssetEditor from './OfficeAssetEditor'
 import binaryExtensions from 'binary-extensions'
 import style from './AssetEditor.scss'
 
@@ -19,15 +18,22 @@ const getTextFromApi = (path) => {
 }
 
 class AssetEditor extends Component {
-  constructor () {
-    super()
-    this.state = { }
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      initialLoading: true,
+      previewOpen: false,
+      previewLoading: false
+    }
+
+    this.previewLoadFinish = this.previewLoadFinish.bind(this)
   }
 
   async componentDidMount () {
     const { entity } = this.props
 
-    var content = entity.content
+    let content = entity.content
 
     if (entity.link) {
       await Studio.saveEntity(entity._id)
@@ -37,7 +43,7 @@ class AssetEditor extends Component {
       content = btoa(unescape(encodeURIComponent(fixedStr)))
     }
 
-    this.setState({ content, loadingFinished: true })
+    this.setState({ content, initialLoading: false })
   }
 
   async componentDidUpdate (prevProps) {
@@ -82,6 +88,10 @@ class AssetEditor extends Component {
     let parts = entity.name.split('.')
     let extension = parts[parts.length - 1]
 
+    if (this.props.embeddingCode != null) {
+      return this.props.embeddingCode
+    }
+
     if (this.isImage(entity)) {
       return `<img src="{#asset ${Studio.resolveEntityPath(entity)} @encoding=dataURI}" />`
     }
@@ -94,7 +104,92 @@ class AssetEditor extends Component {
 }`
     }
 
+    if (this.isOfficeFile(entity)) {
+      return `{#asset ${Studio.resolveEntityPath(entity)} @encoding=base64}`
+    }
+
     return `{#asset ${Studio.resolveEntityPath(entity)} @encoding=utf8}`
+  }
+
+  getLazyPreviewStatus (entity) {
+    if (this.props.lazyPreview != null) {
+      return this.props.lazyPreview
+    }
+
+    if (this.isOfficeFile(entity)) {
+      return true
+    }
+
+    return false
+  }
+
+  getPreviewEnabledStatus (entity) {
+    if (this.props.previewEnabled != null) {
+      return this.props.previewEnabled
+    }
+
+    if (this.isOfficeFile(entity)) {
+      return Studio.extensions.assets.options.officePreview.enabled !== false
+    }
+
+    return true
+  }
+
+  preview (entity) {
+    const { previewOpen } = this.state
+    const { onPreview } = this.props
+    const lazyPreview = this.getLazyPreviewStatus(entity)
+    const previewEnabled = this.getPreviewEnabledStatus(entity)
+
+    if (!lazyPreview || !previewEnabled) {
+      return
+    }
+
+    if (onPreview) {
+      onPreview(entity)
+    } else if (this.isOfficeFile(entity)) {
+      if (
+        Studio.extensions.assets.options.officePreview.showWarning !== false &&
+        Studio.getSettingValueByKey('office-preview-informed', false) === false
+      ) {
+        Studio.setSetting('office-preview-informed', true)
+
+        Studio.openModal(() => (
+          <div>
+            We need to upload your office asset to our publicly hosted server to be able to use
+            Office Online Service for previewing here in the studio. You can disable it in the configuration, see <a
+              href='https://jsreport.net/learn/xlsx#preview-in-studio' target='_blank'>the docs</a> for details.
+          </div>
+        ))
+      }
+    }
+
+    if (previewOpen) {
+      this.clearPreview(() => {
+        this.preview(entity)
+      })
+    } else {
+      Studio.startProgress()
+
+      this.setState({
+        previewLoading: true,
+        previewOpen: true
+      })
+    }
+  }
+
+  previewLoadFinish () {
+    Studio.stopProgress()
+
+    this.setState({
+      previewLoading: false
+    })
+  }
+
+  clearPreview (done) {
+    this.setState({
+      previewOpen: false
+    }, () => done && done())
   }
 
   renderBinary (entity) {
@@ -115,13 +210,165 @@ class AssetEditor extends Component {
     )
   }
 
-  renderEditor (entity) {
+  renderEditorToolbar () {
+    const { link, previewLoading, previewOpen } = this.state
+    const { entity, displayName, icon, showHelp, onDownload, onUpload } = this.props
+    const lazyPreview = this.getLazyPreviewStatus(entity)
+    const previewEnabled = this.getPreviewEnabledStatus(entity)
+    const embeddingCode = this.getEmbeddingCode(entity)
+
+    let visibleName = displayName
+
+    if (!visibleName && entity) {
+      visibleName = entity.name
+    }
+
+    if (!visibleName) {
+      visibleName = '<none>'
+    }
+
+    return (
+      <div className={style.toolbarContainer}>
+        <div className={style.toolbarRow}>
+          <h3 className={style.toolbarAssetName}>
+            <div>
+              <i className={`fa ${icon}`} />
+              &nbsp;
+              <a
+                href='#'
+                onClick={(ev) => {
+                  ev.preventDefault()
+                  Studio.openTab({ _id: entity._id })
+                }}
+              >{visibleName}</a>
+            </div>
+          </h3>
+          {embeddingCode !== '' && (
+            <CopyToClipboard text={embeddingCode}>
+              <a className='button confirmation' title='Coppy the embedding code to clipboard'>
+                <i className='fa fa-clipboard' />
+              </a>
+            </CopyToClipboard>
+          )}
+          {entity != null && (
+            <button
+              className='button confirmation'
+              title='Download'
+              onClick={() => {
+                if (onDownload) {
+                  onDownload(entity)
+                } else {
+                  const downloadEl = document.createElement('a')
+                  downloadEl.target = '_blank'
+                  downloadEl.href = Studio.resolveUrl(`assets/${entity._id}/content?download=true`)
+                  downloadEl.click()
+                }
+              }}
+            >
+              <i className='fa fa-download' />
+            </button>
+          )}
+          {entity != null && !entity.link && (
+            <button
+              className='button confirmation'
+              title='Upload'
+              onClick={() => {
+                const cb = () => {
+                  let wasOpen = false
+
+                  if (lazyPreview && this.state.previewOpen) {
+                    wasOpen = true
+                  }
+
+                  this.clearPreview(() => {
+                    if (wasOpen) {
+                      this.preview(entity)
+                    }
+                  })
+                }
+
+                if (onUpload) {
+                  onUpload(entity, cb)
+                } else {
+                  AssetUploadButton.OpenUpload({
+                    targetAsset: {
+                      _id: entity._id,
+                      name: entity.name
+                    },
+                    uploadCallback: cb
+                  })
+                }
+              }}
+            >
+              <i className='fa fa-upload' />
+            </button>
+          )}
+          {lazyPreview && entity != null && (
+            <button
+              className={`button confirmation ${!previewEnabled || previewLoading ? 'disabled' : ''}`}
+              onClick={() => this.preview(entity)}
+              title={previewOpen ? 'Refresh' : 'Preview'}
+            >
+              <i className={`fa fa-${previewLoading ? '' : previewOpen ? 'retweet' : 'search'}`} /> {previewLoading ? 'Loading..' : ''}
+            </button>
+          )}
+          {lazyPreview && entity != null && previewOpen && !previewLoading && (
+            <button
+              className={`button confirmation ${!previewEnabled || previewLoading ? 'disabled' : ''}`}
+              onClick={() => this.clearPreview()}
+              title='Clear'
+            >
+              <i className='fa fa-times' />
+            </button>
+          )}
+          {showHelp && (
+            <a className={`button confirmation`} target='_blank' title='Help' href='http://jsreport.net/learn/assets'>
+              <i className='fa fa-question' />
+            </a>
+          )}
+        </div>
+        {entity != null && entity.link && (
+          <div className={style.toolbarRow} style={{ margin: '0.6rem' }}>
+            <span><b><i className='fa fa-folder-open' /> linked to file:</b> {link}</span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  renderEditorContent () {
+    const { entity, emptyMessage, getPreviewContent } = this.props
     let parts = entity.name.split('.')
     let extension = parts[parts.length - 1]
+    const lazyPreview = this.getLazyPreviewStatus(entity)
+
+    if (entity == null) {
+      return (
+        <div style={{ padding: '2rem' }}>
+          <i>{emptyMessage != null ? emptyMessage : 'Asset is empty'}</i>
+        </div>
+      )
+    }
+
+    let previewOpen = true
+
+    if (lazyPreview) {
+      previewOpen = this.state.previewOpen
+    }
+
+    if (!previewOpen) {
+      return null
+    }
+
+    if (getPreviewContent) {
+      return getPreviewContent(entity, {
+        previewLoadFinish: this.previewLoadFinish
+      })
+    }
 
     if (this.isImage(entity)) {
       return (
-        <div style={{overflow: 'auto'}}>
+        <div style={{ overflow: 'auto' }}>
           <img
             src={Studio.resolveUrl(`assets/${entity._id}/content?v=${new Date().getTime()}`)}
             style={{display: 'block', margin: '3rem auto'}}
@@ -163,7 +410,12 @@ class AssetEditor extends Component {
     }
 
     if (this.isOfficeFile(entity)) {
-      return <OfficeAssetEditor entity={entity} />
+      return (
+        <Preview
+          onLoad={() => this.previewLoadFinish()}
+          initialSrc={Studio.resolveUrl(`assets/office/${entity._id}/content`)}
+        />
+      )
     }
 
     if (entity.name.split('.').length > 1 && binaryExtensions.includes(entity.name.split('.')[1])) {
@@ -193,46 +445,24 @@ class AssetEditor extends Component {
   }
 
   render () {
-    const { entity } = this.props
-    const { link, loadingFinished } = this.state
-    const downloadUrl = Studio.resolveUrl(`assets/${entity._id}/content?download=true`)
+    const { initialLoading } = this.state
 
-    if (!loadingFinished) {
+    if (initialLoading) {
       return <div />
     }
 
-    let customEditor = this.isOfficeFile(entity)
-
     return (
       <div className='block'>
-        {!customEditor && (
-          <div className={style.toolbarContainer}>
-            <div>
-              <CopyToClipboard text={this.getEmbeddingCode(entity)}>
-                <a className={`button ${style.toolbarButton}`} title='Coppy the embedding code to clipboard'>
-                  <i className='fa fa-clipboard' />
-                </a>
-              </CopyToClipboard>
-              <a className={`button ${style.toolbarButton}`} target='_blank' href={downloadUrl} title='Download asset'>
-                <i className='fa fa-download' />
-              </a>
-              {entity.link ? (
-                <span style={{ margin: '0.6rem' }}>{link}</span>
-              ) : (
-                <a className={`button ${style.toolbarButton}`} title='Upload asset' onClick={() => AssetUploadButton.OpenUpload()}>
-                  <i className='fa fa-upload' />
-                </a>
-              )}
-              <a className={`button ${style.toolbarButton}`} style={{ marginRight: 'auto' }} target='_blank' title='Help' href='http://jsreport.net/learn/assets'>
-                <i className='fa fa-question' />
-              </a>
-            </div>
-          </div>
-        )}
-        {this.renderEditor(entity)}
+        {this.renderEditorToolbar()}
+        {this.renderEditorContent()}
       </div>
     )
   }
+}
+
+AssetEditor.defaultProps = {
+  icon: 'fa-file-o',
+  showHelp: true
 }
 
 export default AssetEditor

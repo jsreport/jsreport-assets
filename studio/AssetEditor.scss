@@ -4,7 +4,23 @@
   background-color: $secondary-backgroundColor;
 }
 
-.toolbarButton {
-  font-size: 1.2rem;
-  color: $primary-selection-backgroundColor !important;
+.toolbarRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.toolbarRow > *,
+.toolbarRow > :global(.button) {
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: auto;
+}
+
+.toolbarAssetName {
+  display: inline-flex;
+  flex-direction: column;
+  margin: 0px;
+  margin-left: 0.6rem;
+  justify-content: center;
 }
