@@ -1356,7 +1356,7 @@ module.exports = ["3dm","3ds","3g2","3gp","7z","a","aac","adp","ai","aif","aiff"
 /***/ (function(module, exports, __webpack_require__) {
 
 // extracted by mini-css-extract-plugin
-module.exports = {"toolbarContainer":"ASSETS-AssetEditor-toolbarContainer","toolbarRow":"ASSETS-AssetEditor-toolbarRow","toolbarAssetName":"ASSETS-AssetEditor-toolbarAssetName"};
+module.exports = {"toolbarContainer":"x-assets-AssetEditor-toolbarContainer","toolbarRow":"x-assets-AssetEditor-toolbarRow","toolbarAssetName":"x-assets-AssetEditor-toolbarAssetName"};
 
 /***/ }),
 /* 13 */
