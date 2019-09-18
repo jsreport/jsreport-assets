@@ -309,7 +309,7 @@ class AssetEditor extends Component {
               onClick={() => this.preview(entity)}
               title={previewOpen ? 'Refresh' : 'Preview'}
             >
-              <i className={`fa fa-${previewLoading ? '' : previewOpen ? 'retweet' : 'search'}`} /> {previewLoading ? 'Loading..' : ''}
+              <i className={`fa fa-${previewLoading ? '' : previewOpen ? 'retweet' : 'eye'}`} /> {previewLoading ? 'Loading..' : ''}
             </button>
           )}
           {lazyPreview && entity != null && previewOpen && !previewLoading && (

@@ -923,7 +923,7 @@ var AssetEditor = function (_Component) {
               },
               title: previewOpen ? 'Refresh' : 'Preview'
             },
-            _react2.default.createElement('i', { className: 'fa fa-' + (previewLoading ? '' : previewOpen ? 'retweet' : 'search') }),
+            _react2.default.createElement('i', { className: 'fa fa-' + (previewLoading ? '' : previewOpen ? 'retweet' : 'eye') }),
             ' ',
             previewLoading ? 'Loading..' : ''
           ),
