@@ -500,6 +500,7 @@ var AssetEditor = function (_Component) {
 
     _this.state = {
       initialLoading: true,
+      helpersActive: false,
       previewOpen: false,
       previewLoading: false
     };
@@ -802,12 +803,13 @@ var AssetEditor = function (_Component) {
       var _state = this.state,
           link = _state.link,
           previewLoading = _state.previewLoading,
-          previewOpen = _state.previewOpen;
+          previewOpen = _state.previewOpen,
+          helpersActive = _state.helpersActive;
       var _props = this.props,
           entity = _props.entity,
+          helpersEntity = _props.helpersEntity,
           displayName = _props.displayName,
           icon = _props.icon,
-          showHelp = _props.showHelp,
           onDownload = _props.onDownload,
           onUpload = _props.onUpload;
 
@@ -938,10 +940,22 @@ var AssetEditor = function (_Component) {
             },
             _react2.default.createElement('i', { className: 'fa fa-times' })
           ),
-          showHelp && _react2.default.createElement(
-            'a',
-            { className: 'button confirmation', target: '_blank', title: 'Help', href: 'http://jsreport.net/learn/assets' },
-            _react2.default.createElement('i', { className: 'fa fa-question' })
+          helpersEntity != null && _react2.default.createElement(
+            'button',
+            {
+              className: 'button ' + (helpersActive ? 'danger' : 'confirmation'),
+              onClick: function onClick() {
+                return _this3.setState(function (state) {
+                  if (state.helpersActive) {
+                    _jsreportStudio2.default.store.dispatch(_jsreportStudio2.default.entities.actions.flushUpdates());
+                  }
+
+                  return { helpersActive: !state.helpersActive };
+                });
+              },
+              title: (helpersActive ? 'Hide' : 'Show') + ' helpers'
+            },
+            _react2.default.createElement('i', { className: 'fa fa-code' })
           )
         ),
         entity != null && entity.link && _react2.default.createElement(
@@ -1088,18 +1102,49 @@ var AssetEditor = function (_Component) {
   }, {
     key: 'render',
     value: function render() {
-      var initialLoading = this.state.initialLoading;
+      var _props3 = this.props,
+          helpersEntity = _props3.helpersEntity,
+          _onUpdate = _props3.onUpdate;
+      var _state2 = this.state,
+          helpersActive = _state2.helpersActive,
+          initialLoading = _state2.initialLoading;
 
 
       if (initialLoading) {
         return _react2.default.createElement('div', null);
       }
 
-      return _react2.default.createElement(
+      var assetEditor = _react2.default.createElement(
         'div',
         { className: 'block' },
         this.renderEditorToolbar(),
         this.renderEditorContent()
+      );
+
+      if (helpersEntity == null || helpersActive === false) {
+        return assetEditor;
+      }
+
+      return _react2.default.createElement(
+        _jsreportStudio.SplitPane,
+        {
+          split: 'horizontal',
+          resizerClassName: 'resizer-horizontal',
+          defaultSize: window.innerHeight * 0.2 + 'px'
+        },
+        assetEditor,
+        _react2.default.createElement(_jsreportStudio.TextEditor, {
+          key: helpersEntity._id + '_helpers',
+          name: helpersEntity._id + '_helpers',
+          getFilename: function getFilename() {
+            return helpersEntity.name + ' (helpers)';
+          },
+          mode: 'javascript',
+          onUpdate: function onUpdate(v) {
+            return _onUpdate(Object.assign({ _id: helpersEntity._id }, { helpers: v }));
+          },
+          value: helpersEntity.helpers || ''
+        })
       );
     }
   }]);
@@ -1108,8 +1153,7 @@ var AssetEditor = function (_Component) {
 }(_react.Component);
 
 AssetEditor.defaultProps = {
-  icon: 'fa-file-o',
-  showHelp: true
+  icon: 'fa-file-o'
 };
 
 exports.default = AssetEditor;

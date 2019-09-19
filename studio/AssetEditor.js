@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import AssetUploadButton from './AssetUploadButton.js'
-import Studio, { Preview, TextEditor } from 'jsreport-studio'
+import Studio, { Preview, SplitPane, TextEditor } from 'jsreport-studio'
 import superagent from 'superagent'
 import Promise from 'bluebird'
 import CopyToClipboard from 'react-copy-to-clipboard'
@@ -23,6 +23,7 @@ class AssetEditor extends Component {
 
     this.state = {
       initialLoading: true,
+      helpersActive: false,
       previewOpen: false,
       previewLoading: false
     }
@@ -211,8 +212,8 @@ class AssetEditor extends Component {
   }
 
   renderEditorToolbar () {
-    const { link, previewLoading, previewOpen } = this.state
-    const { entity, displayName, icon, onDownload, onUpload } = this.props
+    const { link, previewLoading, previewOpen, helpersActive } = this.state
+    const { entity, helpersEntity, displayName, icon, onDownload, onUpload } = this.props
     const lazyPreview = this.getLazyPreviewStatus(entity)
     const previewEnabled = this.getPreviewEnabledStatus(entity)
     const embeddingCode = this.getEmbeddingCode(entity)
@@ -319,6 +320,21 @@ class AssetEditor extends Component {
               title='Clear'
             >
               <i className='fa fa-times' />
+            </button>
+          )}
+          {helpersEntity != null && (
+            <button
+              className={`button ${helpersActive ? 'danger' : 'confirmation'}`}
+              onClick={() => this.setState((state) => {
+                if (state.helpersActive) {
+                  Studio.store.dispatch(Studio.entities.actions.flushUpdates())
+                }
+
+                return { helpersActive: !state.helpersActive }
+              })}
+              title={`${helpersActive ? 'Hide' : 'Show'} helpers`}
+            >
+              <i className='fa fa-code' />
             </button>
           )}
         </div>
@@ -440,17 +456,40 @@ class AssetEditor extends Component {
   }
 
   render () {
-    const { initialLoading } = this.state
+    const { helpersEntity, onUpdate } = this.props
+    const { helpersActive, initialLoading } = this.state
 
     if (initialLoading) {
       return <div />
     }
 
-    return (
+    const assetEditor = (
       <div className='block'>
         {this.renderEditorToolbar()}
         {this.renderEditorContent()}
       </div>
+    )
+
+    if (helpersEntity == null || helpersActive === false) {
+      return assetEditor
+    }
+
+    return (
+      <SplitPane
+        split='horizontal'
+        resizerClassName='resizer-horizontal'
+        defaultSize={(window.innerHeight * 0.2) + 'px'}
+      >
+        {assetEditor}
+        <TextEditor
+          key={helpersEntity._id + '_helpers'}
+          name={helpersEntity._id + '_helpers'}
+          getFilename={() => `${helpersEntity.name} (helpers)`}
+          mode='javascript'
+          onUpdate={(v) => onUpdate(Object.assign({ _id: helpersEntity._id }, { helpers: v }))}
+          value={helpersEntity.helpers || ''}
+        />
+      </SplitPane>
     )
   }
 }
