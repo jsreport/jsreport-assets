@@ -519,32 +519,43 @@ var AssetEditor = function (_Component) {
             switch (_context.prev = _context.next) {
               case 0:
                 entity = this.props.entity;
-                content = entity.content;
 
-                if (!entity.link) {
-                  _context.next = 11;
+                if (entity) {
+                  _context.next = 3;
                   break;
                 }
 
-                _context.next = 5;
+                return _context.abrupt('return', this.setState({
+                  initialLoading: false
+                }));
+
+              case 3:
+                content = entity.content;
+
+                if (!entity.link) {
+                  _context.next = 13;
+                  break;
+                }
+
+                _context.next = 7;
                 return _jsreportStudio2.default.saveEntity(entity._id);
 
-              case 5:
-                _context.next = 7;
+              case 7:
+                _context.next = 9;
                 return _jsreportStudio2.default.api.get('assets/' + entity._id + '/content', { responseType: 'arraybuffer' });
 
-              case 7:
+              case 9:
                 ab = _context.sent;
                 str = String.fromCharCode.apply(null, new Uint8Array(ab));
                 fixedStr = decodeURIComponent(escape(str));
 
                 content = btoa(unescape(encodeURIComponent(fixedStr)));
 
-              case 11:
+              case 13:
 
                 this.setState({ content: content, initialLoading: false });
 
-              case 12:
+              case 14:
               case 'end':
                 return _context.stop();
             }
@@ -569,34 +580,42 @@ var AssetEditor = function (_Component) {
               case 0:
                 entity = this.props.entity;
 
-                if (!(entity.link && (!this.state.link || prevProps.entity.link !== entity.link))) {
-                  _context2.next = 12;
+                if (entity) {
+                  _context2.next = 3;
                   break;
                 }
 
-                _context2.prev = 2;
-                _context2.next = 5;
+                return _context2.abrupt('return');
+
+              case 3:
+                if (!(entity.link && (!this.state.link || prevProps.entity.link !== entity.link))) {
+                  _context2.next = 14;
+                  break;
+                }
+
+                _context2.prev = 4;
+                _context2.next = 7;
                 return getTextFromApi('assets/link/' + encodeURIComponent(entity.link));
 
-              case 5:
+              case 7:
                 link = _context2.sent;
 
                 this.setState({ link: link });
-                _context2.next = 12;
+                _context2.next = 14;
                 break;
 
-              case 9:
-                _context2.prev = 9;
-                _context2.t0 = _context2['catch'](2);
+              case 11:
+                _context2.prev = 11;
+                _context2.t0 = _context2['catch'](4);
 
                 this.setState({ link: _context2.t0.message });
 
-              case 12:
+              case 14:
               case 'end':
                 return _context2.stop();
             }
           }
-        }, _callee2, this, [[2, 9]]);
+        }, _callee2, this, [[4, 11]]);
       }));
 
       function componentDidUpdate(_x2) {
@@ -608,21 +627,33 @@ var AssetEditor = function (_Component) {
   }, {
     key: 'isOfficeFile',
     value: function isOfficeFile(entity) {
+      if (entity == null) {
+        return false;
+      }
       return entity.name.match(/\.(docx|xlsx|pptx)$/) != null;
     }
   }, {
     key: 'isImage',
     value: function isImage(entity) {
+      if (entity == null) {
+        return false;
+      }
       return entity.name.match(/\.(jpeg|jpg|gif|png|svg)$/) != null;
     }
   }, {
     key: 'isFont',
     value: function isFont(entity) {
+      if (entity == null) {
+        return false;
+      }
       return entity.name.match(/\.(otf|woff|ttf|eot|woff2)$/) != null;
     }
   }, {
     key: 'isPdf',
     value: function isPdf(entity) {
+      if (entity == null) {
+        return false;
+      }
       return entity.name.match(/\.(pdf)$/) != null;
     }
   }, {
@@ -642,6 +673,10 @@ var AssetEditor = function (_Component) {
   }, {
     key: 'getEmbeddingCode',
     value: function getEmbeddingCode(entity) {
+      if (entity == null) {
+        return '';
+      }
+
       var parts = entity.name.split('.');
       var extension = parts[parts.length - 1];
 
@@ -841,7 +876,7 @@ var AssetEditor = function (_Component) {
               null,
               _react2.default.createElement('i', { className: 'fa ' + icon }),
               '\xA0',
-              _react2.default.createElement(
+              entity != null ? _react2.default.createElement(
                 'a',
                 {
                   href: '#',
@@ -851,7 +886,7 @@ var AssetEditor = function (_Component) {
                   }
                 },
                 visibleName
-              )
+              ) : visibleName
             )
           ),
           embeddingCode !== '' && _react2.default.createElement(
@@ -986,9 +1021,6 @@ var AssetEditor = function (_Component) {
           emptyMessage = _props2.emptyMessage,
           getPreviewContent = _props2.getPreviewContent;
 
-      var parts = entity.name.split('.');
-      var extension = parts[parts.length - 1];
-      var lazyPreview = this.getLazyPreviewStatus(entity);
 
       if (entity == null) {
         return _react2.default.createElement(
@@ -1001,6 +1033,10 @@ var AssetEditor = function (_Component) {
           )
         );
       }
+
+      var parts = entity.name.split('.');
+      var extension = parts[parts.length - 1];
+      var lazyPreview = this.getLazyPreviewStatus(entity);
 
       var previewOpen = true;
 

@@ -34,6 +34,12 @@ class AssetEditor extends Component {
   async componentDidMount () {
     const { entity } = this.props
 
+    if (!entity) {
+      return this.setState({
+        initialLoading: false
+      })
+    }
+
     let content = entity.content
 
     if (entity.link) {
@@ -50,6 +56,10 @@ class AssetEditor extends Component {
   async componentDidUpdate (prevProps) {
     const { entity } = this.props
 
+    if (!entity) {
+      return
+    }
+
     if (entity.link && (!this.state.link || prevProps.entity.link !== entity.link)) {
       try {
         const link = await getTextFromApi(`assets/link/${encodeURIComponent(entity.link)}`)
@@ -61,18 +71,22 @@ class AssetEditor extends Component {
   }
 
   isOfficeFile (entity) {
+    if (entity == null) { return false }
     return entity.name.match(/\.(docx|xlsx|pptx)$/) != null
   }
 
   isImage (entity) {
+    if (entity == null) { return false }
     return entity.name.match(/\.(jpeg|jpg|gif|png|svg)$/) != null
   }
 
   isFont (entity) {
+    if (entity == null) { return false }
     return entity.name.match(/\.(otf|woff|ttf|eot|woff2)$/) != null
   }
 
   isPdf (entity) {
+    if (entity == null) { return false }
     return entity.name.match(/\.(pdf)$/) != null
   }
 
@@ -86,6 +100,8 @@ class AssetEditor extends Component {
   }
 
   getEmbeddingCode (entity) {
+    if (entity == null) { return '' }
+
     let parts = entity.name.split('.')
     let extension = parts[parts.length - 1]
 
@@ -235,13 +251,15 @@ class AssetEditor extends Component {
             <div>
               <i className={`fa ${icon}`} />
               &nbsp;
-              <a
-                href='#'
-                onClick={(ev) => {
-                  ev.preventDefault()
-                  Studio.openTab({ _id: entity._id })
-                }}
-              >{visibleName}</a>
+              {entity != null ? (
+                <a
+                  href='#'
+                  onClick={(ev) => {
+                    ev.preventDefault()
+                    Studio.openTab({ _id: entity._id })
+                  }}
+                >{visibleName}</a>
+              ) : visibleName}
             </div>
           </h3>
           {embeddingCode !== '' && (
@@ -349,9 +367,6 @@ class AssetEditor extends Component {
 
   renderEditorContent () {
     const { entity, emptyMessage, getPreviewContent } = this.props
-    let parts = entity.name.split('.')
-    let extension = parts[parts.length - 1]
-    const lazyPreview = this.getLazyPreviewStatus(entity)
 
     if (entity == null) {
       return (
@@ -360,6 +375,10 @@ class AssetEditor extends Component {
         </div>
       )
     }
+
+    let parts = entity.name.split('.')
+    let extension = parts[parts.length - 1]
+    const lazyPreview = this.getLazyPreviewStatus(entity)
 
     let previewOpen = true
 
