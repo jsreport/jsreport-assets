@@ -212,7 +212,7 @@ class AssetEditor extends Component {
 
   renderEditorToolbar () {
     const { link, previewLoading, previewOpen } = this.state
-    const { entity, displayName, icon, showHelp, onDownload, onUpload } = this.props
+    const { entity, displayName, icon, onDownload, onUpload } = this.props
     const lazyPreview = this.getLazyPreviewStatus(entity)
     const previewEnabled = this.getPreviewEnabledStatus(entity)
     const embeddingCode = this.getEmbeddingCode(entity)
@@ -320,11 +320,6 @@ class AssetEditor extends Component {
             >
               <i className='fa fa-times' />
             </button>
-          )}
-          {showHelp && (
-            <a className={`button confirmation`} target='_blank' title='Help' href='http://jsreport.net/learn/assets'>
-              <i className='fa fa-question' />
-            </a>
           )}
         </div>
         {entity != null && entity.link && (
@@ -461,8 +456,7 @@ class AssetEditor extends Component {
 }
 
 AssetEditor.defaultProps = {
-  icon: 'fa-file-o',
-  showHelp: true
+  icon: 'fa-file-o'
 }
 
 export default AssetEditor
