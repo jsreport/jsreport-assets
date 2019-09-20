@@ -190,7 +190,8 @@ class AssetEditor extends Component {
 
       this.setState({
         previewLoading: true,
-        previewOpen: true
+        previewOpen: true,
+        helpersActive: false
       })
     }
   }
@@ -344,11 +345,17 @@ class AssetEditor extends Component {
             <button
               className={`button ${helpersActive ? 'danger' : 'confirmation'}`}
               onClick={() => this.setState((state) => {
+                const change = {}
+
                 if (state.helpersActive) {
                   Studio.store.dispatch(Studio.entities.actions.flushUpdates())
+                } else {
+                  change.previewOpen = false
+                  change.previewLoading = false
+                  Studio.stopProgress()
                 }
 
-                return { helpersActive: !state.helpersActive }
+                return { helpersActive: !state.helpersActive, ...change }
               })}
               title={`${helpersActive ? 'Hide' : 'Show'} helpers`}
             >
@@ -366,7 +373,21 @@ class AssetEditor extends Component {
   }
 
   renderEditorContent () {
-    const { entity, emptyMessage, getPreviewContent } = this.props
+    const { entity, helpersEntity, emptyMessage, getPreviewContent, onUpdate } = this.props
+    const { helpersActive } = this.state
+
+    if (helpersEntity != null && helpersActive) {
+      return (
+        <TextEditor
+          key={helpersEntity._id + '_helpers'}
+          name={helpersEntity._id + '_helpers'}
+          getFilename={() => `${helpersEntity.name} (helpers)`}
+          mode='javascript'
+          onUpdate={(v) => onUpdate(Object.assign({ _id: helpersEntity._id }, { helpers: v }))}
+          value={helpersEntity.helpers || ''}
+        />
+      )
+    }
 
     if (entity == null) {
       return (
@@ -475,40 +496,17 @@ class AssetEditor extends Component {
   }
 
   render () {
-    const { helpersEntity, onUpdate } = this.props
-    const { helpersActive, initialLoading } = this.state
+    const { initialLoading } = this.state
 
     if (initialLoading) {
       return <div />
     }
 
-    const assetEditor = (
+    return (
       <div className='block'>
         {this.renderEditorToolbar()}
         {this.renderEditorContent()}
       </div>
-    )
-
-    if (helpersEntity == null || helpersActive === false) {
-      return assetEditor
-    }
-
-    return (
-      <SplitPane
-        split='horizontal'
-        resizerClassName='resizer-horizontal'
-        defaultSize={(window.innerHeight * 0.2) + 'px'}
-      >
-        {assetEditor}
-        <TextEditor
-          key={helpersEntity._id + '_helpers'}
-          name={helpersEntity._id + '_helpers'}
-          getFilename={() => `${helpersEntity.name} (helpers)`}
-          mode='javascript'
-          onUpdate={(v) => onUpdate(Object.assign({ _id: helpersEntity._id }, { helpers: v }))}
-          value={helpersEntity.helpers || ''}
-        />
-      </SplitPane>
     )
   }
 }

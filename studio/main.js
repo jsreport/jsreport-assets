@@ -431,6 +431,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = __webpack_require__(0);
@@ -771,7 +773,8 @@ var AssetEditor = function (_Component) {
 
         this.setState({
           previewLoading: true,
-          previewOpen: true
+          previewOpen: true,
+          helpersActive: false
         });
       }
     }
@@ -981,11 +984,17 @@ var AssetEditor = function (_Component) {
               className: 'button ' + (helpersActive ? 'danger' : 'confirmation'),
               onClick: function onClick() {
                 return _this3.setState(function (state) {
+                  var change = {};
+
                   if (state.helpersActive) {
                     _jsreportStudio2.default.store.dispatch(_jsreportStudio2.default.entities.actions.flushUpdates());
+                  } else {
+                    change.previewOpen = false;
+                    change.previewLoading = false;
+                    _jsreportStudio2.default.stopProgress();
                   }
 
-                  return { helpersActive: !state.helpersActive };
+                  return _extends({ helpersActive: !state.helpersActive }, change);
                 });
               },
               title: (helpersActive ? 'Hide' : 'Show') + ' helpers'
@@ -1018,9 +1027,27 @@ var AssetEditor = function (_Component) {
 
       var _props2 = this.props,
           entity = _props2.entity,
+          helpersEntity = _props2.helpersEntity,
           emptyMessage = _props2.emptyMessage,
-          getPreviewContent = _props2.getPreviewContent;
+          getPreviewContent = _props2.getPreviewContent,
+          _onUpdate = _props2.onUpdate;
+      var helpersActive = this.state.helpersActive;
 
+
+      if (helpersEntity != null && helpersActive) {
+        return _react2.default.createElement(_jsreportStudio.TextEditor, {
+          key: helpersEntity._id + '_helpers',
+          name: helpersEntity._id + '_helpers',
+          getFilename: function getFilename() {
+            return helpersEntity.name + ' (helpers)';
+          },
+          mode: 'javascript',
+          onUpdate: function onUpdate(v) {
+            return _onUpdate(Object.assign({ _id: helpersEntity._id }, { helpers: v }));
+          },
+          value: helpersEntity.helpers || ''
+        });
+      }
 
       if (entity == null) {
         return _react2.default.createElement(
@@ -1138,49 +1165,18 @@ var AssetEditor = function (_Component) {
   }, {
     key: 'render',
     value: function render() {
-      var _props3 = this.props,
-          helpersEntity = _props3.helpersEntity,
-          _onUpdate = _props3.onUpdate;
-      var _state2 = this.state,
-          helpersActive = _state2.helpersActive,
-          initialLoading = _state2.initialLoading;
+      var initialLoading = this.state.initialLoading;
 
 
       if (initialLoading) {
         return _react2.default.createElement('div', null);
       }
 
-      var assetEditor = _react2.default.createElement(
+      return _react2.default.createElement(
         'div',
         { className: 'block' },
         this.renderEditorToolbar(),
         this.renderEditorContent()
-      );
-
-      if (helpersEntity == null || helpersActive === false) {
-        return assetEditor;
-      }
-
-      return _react2.default.createElement(
-        _jsreportStudio.SplitPane,
-        {
-          split: 'horizontal',
-          resizerClassName: 'resizer-horizontal',
-          defaultSize: window.innerHeight * 0.2 + 'px'
-        },
-        assetEditor,
-        _react2.default.createElement(_jsreportStudio.TextEditor, {
-          key: helpersEntity._id + '_helpers',
-          name: helpersEntity._id + '_helpers',
-          getFilename: function getFilename() {
-            return helpersEntity.name + ' (helpers)';
-          },
-          mode: 'javascript',
-          onUpdate: function onUpdate(v) {
-            return _onUpdate(Object.assign({ _id: helpersEntity._id }, { helpers: v }));
-          },
-          value: helpersEntity.helpers || ''
-        })
       );
     }
   }]);
