@@ -609,6 +609,8 @@ _jsreportStudio2.default.entityTreeDropResolvers.push({
 
             case 32:
 
+              dropComplete();
+
               if (errors.length > 0) {
                 assetsUploadedError = new Error('Could not complete asset upload' + (files.length > 1 ? ' of some files' : '') + '.\n\n' + errors.map(function (e) {
                   return e.message;
@@ -617,7 +619,7 @@ _jsreportStudio2.default.entityTreeDropResolvers.push({
                 _jsreportStudio2.default.apiFailed(assetsUploadedError);
               }
 
-            case 33:
+            case 34:
             case 'end':
               return _context3.stop();
           }

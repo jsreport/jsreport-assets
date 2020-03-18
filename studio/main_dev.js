@@ -112,6 +112,8 @@ Studio.entityTreeDropResolvers.push({
       }
     }
 
+    dropComplete()
+
     if (errors.length > 0) {
       const assetsUploadedError = new Error(`Could not complete asset upload${files.length > 1 ? ' of some files' : ''}.\n\n${errors.map((e) => e.message).join('\n')}`)
       Studio.apiFailed(assetsUploadedError)
