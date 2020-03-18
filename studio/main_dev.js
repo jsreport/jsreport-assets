@@ -43,3 +43,78 @@ Studio.entityTreeIconResolvers.push((entity) => {
     default: return 'fa-file-o '
   }
 })
+
+Studio.entityTreeDropResolvers.push({
+  type: Studio.dragAndDropNativeTypes.FILE,
+  async handler ({
+    draggedItem,
+    dragOverContext,
+    dropComplete
+  }) {
+    const files = draggedItem.files
+
+    let targetInfo = {
+      shortid: null
+    }
+
+    if (dragOverContext && dragOverContext.containerTargetEntity) {
+      targetInfo.shortid = dragOverContext.containerTargetEntity.shortid
+    }
+
+    const errors = []
+
+    for (const file of files) {
+      if (file.type === 'application/zip') {
+        return
+      }
+
+      try {
+        const assetFile = await new Promise((resolve, reject) => {
+          const fileName = file.name
+          const reader = new FileReader()
+
+          reader.onloadend = async () => {
+            resolve({
+              name: fileName,
+              content: reader.result.substring(reader.result.indexOf('base64,') + 'base64,'.length)
+            })
+          }
+
+          reader.onerror = function () {
+            const errMsg = `There was an error reading the file "${fileName}"`
+            reject(errMsg)
+          }
+
+          reader.readAsDataURL(file)
+        })
+
+        if (targetInfo.shortid != null) {
+          assetFile.folder = {
+            shortid: targetInfo.shortid
+          }
+        }
+
+        let response = await Studio.api.post('/odata/assets', {
+          data: assetFile
+        }, true)
+
+        response.__entitySet = 'assets'
+
+        Studio.addExistingEntity(response)
+        Studio.openTab(Object.assign({}, response))
+
+        // delay the collapsing a bit to avoid showing ugly transition of collapsed -> uncollapsed
+        setTimeout(() => {
+          Studio.collapseEntity({ shortid: response.shortid }, false, { parents: true, self: false })
+        }, 200)
+      } catch (e) {
+        errors.push(e)
+      }
+    }
+
+    if (errors.length > 0) {
+      const assetsUploadedError = new Error(`Could not complete asset upload${files.length > 1 ? ' of some files' : ''}.\n\n${errors.map((e) => e.message).join('\n')}`)
+      Studio.apiFailed(assetsUploadedError)
+    }
+  }
+})

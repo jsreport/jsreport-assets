@@ -349,6 +349,8 @@ exports.default = AssetUploadButton;
 "use strict";
 
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _AssetEditor = __webpack_require__(4);
 
 var _AssetEditor2 = _interopRequireDefault(_AssetEditor);
@@ -370,6 +372,8 @@ var _jsreportStudio = __webpack_require__(1);
 var _jsreportStudio2 = _interopRequireDefault(_jsreportStudio);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 _jsreportStudio2.default.addEntitySet({
   name: 'assets',
@@ -417,6 +421,209 @@ _jsreportStudio2.default.entityTreeIconResolvers.push(function (entity) {
       return 'fa-css3';
     default:
       return 'fa-file-o ';
+  }
+});
+
+_jsreportStudio2.default.entityTreeDropResolvers.push({
+  type: _jsreportStudio2.default.dragAndDropNativeTypes.FILE,
+  handler: function handler(_ref) {
+    var _this = this;
+
+    var draggedItem = _ref.draggedItem,
+        dragOverContext = _ref.dragOverContext,
+        dropComplete = _ref.dropComplete;
+    return _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+      var files, targetInfo, errors, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step, _ret, assetsUploadedError;
+
+      return regeneratorRuntime.wrap(function _callee2$(_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              files = draggedItem.files;
+              targetInfo = {
+                shortid: null
+              };
+
+
+              if (dragOverContext && dragOverContext.containerTargetEntity) {
+                targetInfo.shortid = dragOverContext.containerTargetEntity.shortid;
+              }
+
+              errors = [];
+              _iteratorNormalCompletion = true;
+              _didIteratorError = false;
+              _iteratorError = undefined;
+              _context3.prev = 7;
+              _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop() {
+                var file, assetFile, response;
+                return regeneratorRuntime.wrap(function _loop$(_context2) {
+                  while (1) {
+                    switch (_context2.prev = _context2.next) {
+                      case 0:
+                        file = _step.value;
+
+                        if (!(file.type === 'application/zip')) {
+                          _context2.next = 3;
+                          break;
+                        }
+
+                        return _context2.abrupt('return', {
+                          v: void 0
+                        });
+
+                      case 3:
+                        _context2.prev = 3;
+                        _context2.next = 6;
+                        return new Promise(function (resolve, reject) {
+                          var fileName = file.name;
+                          var reader = new FileReader();
+
+                          reader.onloadend = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+                            return regeneratorRuntime.wrap(function _callee$(_context) {
+                              while (1) {
+                                switch (_context.prev = _context.next) {
+                                  case 0:
+                                    resolve({
+                                      name: fileName,
+                                      content: reader.result.substring(reader.result.indexOf('base64,') + 'base64,'.length)
+                                    });
+
+                                  case 1:
+                                  case 'end':
+                                    return _context.stop();
+                                }
+                              }
+                            }, _callee, _this);
+                          }));
+
+                          reader.onerror = function () {
+                            var errMsg = 'There was an error reading the file "' + fileName + '"';
+                            reject(errMsg);
+                          };
+
+                          reader.readAsDataURL(file);
+                        });
+
+                      case 6:
+                        assetFile = _context2.sent;
+
+
+                        if (targetInfo.shortid != null) {
+                          assetFile.folder = {
+                            shortid: targetInfo.shortid
+                          };
+                        }
+
+                        _context2.next = 10;
+                        return _jsreportStudio2.default.api.post('/odata/assets', {
+                          data: assetFile
+                        }, true);
+
+                      case 10:
+                        response = _context2.sent;
+
+
+                        response.__entitySet = 'assets';
+
+                        _jsreportStudio2.default.addExistingEntity(response);
+                        _jsreportStudio2.default.openTab(Object.assign({}, response));
+
+                        // delay the collapsing a bit to avoid showing ugly transition of collapsed -> uncollapsed
+                        setTimeout(function () {
+                          _jsreportStudio2.default.collapseEntity({ shortid: response.shortid }, false, { parents: true, self: false });
+                        }, 200);
+                        _context2.next = 20;
+                        break;
+
+                      case 17:
+                        _context2.prev = 17;
+                        _context2.t0 = _context2['catch'](3);
+
+                        errors.push(_context2.t0);
+
+                      case 20:
+                      case 'end':
+                        return _context2.stop();
+                    }
+                  }
+                }, _loop, _this, [[3, 17]]);
+              });
+              _iterator = files[Symbol.iterator]();
+
+            case 10:
+              if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                _context3.next = 18;
+                break;
+              }
+
+              return _context3.delegateYield(_loop(), 't0', 12);
+
+            case 12:
+              _ret = _context3.t0;
+
+              if (!((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object")) {
+                _context3.next = 15;
+                break;
+              }
+
+              return _context3.abrupt('return', _ret.v);
+
+            case 15:
+              _iteratorNormalCompletion = true;
+              _context3.next = 10;
+              break;
+
+            case 18:
+              _context3.next = 24;
+              break;
+
+            case 20:
+              _context3.prev = 20;
+              _context3.t1 = _context3['catch'](7);
+              _didIteratorError = true;
+              _iteratorError = _context3.t1;
+
+            case 24:
+              _context3.prev = 24;
+              _context3.prev = 25;
+
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+
+            case 27:
+              _context3.prev = 27;
+
+              if (!_didIteratorError) {
+                _context3.next = 30;
+                break;
+              }
+
+              throw _iteratorError;
+
+            case 30:
+              return _context3.finish(27);
+
+            case 31:
+              return _context3.finish(24);
+
+            case 32:
+
+              if (errors.length > 0) {
+                assetsUploadedError = new Error('Could not complete asset upload' + (files.length > 1 ? ' of some files' : '') + '.\n\n' + errors.map(function (e) {
+                  return e.message;
+                }).join('\n'));
+
+                _jsreportStudio2.default.apiFailed(assetsUploadedError);
+              }
+
+            case 33:
+            case 'end':
+              return _context3.stop();
+          }
+        }
+      }, _callee2, _this, [[7, 20, 24, 32], [25,, 27, 31]]);
+    }))();
   }
 });
 
