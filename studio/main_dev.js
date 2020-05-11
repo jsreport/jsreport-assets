@@ -64,8 +64,8 @@ Studio.entityTreeDropResolvers.push({
     const errors = []
 
     for (const file of files) {
-      if (file.type === 'application/zip') {
-        return
+      if (/\.zip$/.test(file.name)) {
+        continue
       }
 
       try {

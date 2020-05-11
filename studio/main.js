@@ -349,8 +349,6 @@ exports.default = AssetUploadButton;
 "use strict";
 
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _AssetEditor = __webpack_require__(4);
 
 var _AssetEditor2 = _interopRequireDefault(_AssetEditor);
@@ -462,14 +460,12 @@ _jsreportStudio2.default.entityTreeDropResolvers.push({
                       case 0:
                         file = _step.value;
 
-                        if (!(file.type === 'application/zip')) {
+                        if (!/\.zip$/.test(file.name)) {
                           _context2.next = 3;
                           break;
                         }
 
-                        return _context2.abrupt('return', {
-                          v: void 0
-                        });
+                        return _context2.abrupt('return', 'continue');
 
                       case 3:
                         _context2.prev = 3;
@@ -561,12 +557,12 @@ _jsreportStudio2.default.entityTreeDropResolvers.push({
             case 12:
               _ret = _context3.t0;
 
-              if (!((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object")) {
+              if (!(_ret === 'continue')) {
                 _context3.next = 15;
                 break;
               }
 
-              return _context3.abrupt('return', _ret.v);
+              return _context3.abrupt('continue', 15);
 
             case 15:
               _iteratorNormalCompletion = true;
