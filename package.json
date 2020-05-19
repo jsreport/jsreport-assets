@@ -1,6 +1,6 @@
 {
   "name": "jsreport-assets",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "jsreport extension embedding static assets like fonts or helpers into the templates",
   "scripts": {
     "start": "jsreport-studio-start",
