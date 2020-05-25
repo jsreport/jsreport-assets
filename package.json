@@ -50,7 +50,7 @@
     "eslint-config-standard-jsx": "4.0.2",
     "eslint-plugin-babel": "4.1.2",
     "in-publish": "2.0.1",
-    "jsreport-core": "2.8.1",
+    "jsreport-core": "github:jsreport/jsreport-core",
     "jsreport-express": "2.6.0",
     "jsreport-jsrender": "2.1.1",
     "jsreport-scripts": "2.4.0",
