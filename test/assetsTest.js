@@ -722,7 +722,43 @@ describe('assets', function () {
       res.content.toString().should.be.eql('hello')
     })
 
-    it('should resolve asset using folders relative path {#asset ./assets/foo.html}', async () => {
+    it('should resolve asset using folders relative path {#asset ./foo.html} (template at root, asset at root)', async () => {
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello'
+      })
+      await reporter.documentStore.collection('templates').insert({
+        name: 'template',
+        content: '{#asset ./foo.html}',
+        engine: 'none',
+        recipe: 'html'
+      })
+
+      const res = await reporter.render({
+        template: {
+          name: 'template'
+        }
+      })
+      res.content.toString().should.be.eql('hello')
+    })
+
+    it('should resolve asset using folders relative path {#asset ./foo.html} (anonymous template, asset at root)', async () => {
+      await reporter.documentStore.collection('assets').insert({
+        name: 'foo.html',
+        content: 'hello'
+      })
+
+      const res = await reporter.render({
+        template: {
+          content: '{#asset ./foo.html}',
+          engine: 'none',
+          recipe: 'html'
+        }
+      })
+      res.content.toString().should.be.eql('hello')
+    })
+
+    it('should resolve asset using folders relative path {#asset ./assets/foo.html} (template at folder and asset at folder)', async () => {
       await reporter.documentStore.collection('folders').insert({
         name: 'company',
         shortid: 'company'
