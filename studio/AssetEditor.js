@@ -3,7 +3,7 @@ import AssetUploadButton from './AssetUploadButton.js'
 import Studio, { Preview, TextEditor } from 'jsreport-studio'
 import superagent from 'superagent'
 import Promise from 'bluebird'
-import CopyToClipboard from 'react-copy-to-clipboard'
+import { CopyToClipboard } from 'react-copy-to-clipboard'
 import binaryExtensions from 'binary-extensions'
 import style from './AssetEditor.scss'
 

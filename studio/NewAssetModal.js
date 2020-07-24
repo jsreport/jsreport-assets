@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react'
+import PropTypes from 'prop-types'
+import React, { Component } from 'react'
 import AssetUploadButton from './AssetUploadButton.js'
 import Studio from 'jsreport-studio'
 
