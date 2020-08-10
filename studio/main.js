@@ -132,11 +132,18 @@ var _fileUploadButton = void 0;
 var AssetUploadButton = function (_Component) {
   _inherits(AssetUploadButton, _Component);
 
-  function AssetUploadButton() {
+  function AssetUploadButton(props) {
     _classCallCheck(this, AssetUploadButton);
 
-    return _possibleConstructorReturn(this, (AssetUploadButton.__proto__ || Object.getPrototypeOf(AssetUploadButton)).apply(this, arguments));
+    var _this = _possibleConstructorReturn(this, (AssetUploadButton.__proto__ || Object.getPrototypeOf(AssetUploadButton)).call(this, props));
+
+    _this.inputFileRef = _react2.default.createRef();
+    return _this;
   }
+
+  // we need to have global action in main_dev which is triggered when users clicks on + on images
+  // this triggers invisible button in the toolbar
+
 
   _createClass(AssetUploadButton, [{
     key: 'componentDidMount',
@@ -169,7 +176,7 @@ var AssetUploadButton = function (_Component) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                _this2.refs.file.value = '';
+                _this2.inputFileRef.current.value = '';
 
                 if (!(_this2.type === 'new')) {
                   _context.next = 14;
@@ -282,27 +289,27 @@ var AssetUploadButton = function (_Component) {
       this.type = type;
 
       if (defaults) {
-        this.refs.file.assetDefaults = defaults;
+        this.inputFileRef.current.assetDefaults = defaults;
       } else {
-        delete this.refs.file.assetDefaults;
+        delete this.inputFileRef.current.assetDefaults;
       }
 
       if (targetAssetIdAndName) {
-        this.refs.file.targetAsset = targetAssetIdAndName;
+        this.inputFileRef.current.targetAsset = targetAssetIdAndName;
       } else if (type !== 'new') {
-        this.refs.file.targetAsset = {
+        this.inputFileRef.current.targetAsset = {
           _id: this.props.tab.entity._id,
           name: this.props.tab.entity.name
         };
       }
 
       if (opts.uploadCallback) {
-        this.refs.file.uploadCallback = opts.uploadCallback;
+        this.inputFileRef.current.uploadCallback = opts.uploadCallback;
       } else {
-        delete this.refs.file.uploadCallback;
+        delete this.inputFileRef.current.uploadCallback;
       }
 
-      this.refs.file.dispatchEvent(new MouseEvent('click', {
+      this.inputFileRef.current.dispatchEvent(new MouseEvent('click', {
         'view': window,
         'bubbles': false,
         'cancelable': true
@@ -313,9 +320,15 @@ var AssetUploadButton = function (_Component) {
     value: function renderUpload() {
       var _this3 = this;
 
-      return _react2.default.createElement('input', { type: 'file', key: 'file', ref: 'file', style: { display: 'none' }, onChange: function onChange(e) {
+      return _react2.default.createElement('input', {
+        type: 'file',
+        key: 'file',
+        ref: this.inputFileRef,
+        style: { display: 'none' },
+        onChange: function onChange(e) {
           return _this3.upload(e);
-        } });
+        }
+      });
     }
   }, {
     key: 'render',
@@ -324,9 +337,6 @@ var AssetUploadButton = function (_Component) {
     }
   }], [{
     key: 'OpenUpload',
-
-    // we need to have global action in main_dev which is triggered when users clicks on + on images
-    // this triggers invisible button in the toolbar
     value: function OpenUpload(opts) {
       _fileUploadButton.openFileDialog('edit', undefined, opts);
     }
@@ -1759,6 +1769,8 @@ var NewAssetModal = function (_Component) {
 
     var _this = _possibleConstructorReturn(this, (NewAssetModal.__proto__ || Object.getPrototypeOf(NewAssetModal)).call(this));
 
+    _this.nameRef = _react2.default.createRef();
+    _this.linkRef = _react2.default.createRef();
     _this.state = { isLink: false };
     return _this;
   }
@@ -1779,7 +1791,7 @@ var NewAssetModal = function (_Component) {
       var _this2 = this;
 
       setTimeout(function () {
-        return _this2.refs.name.focus();
+        return _this2.nameRef.current.focus();
       }, 0);
     }
   }, {
@@ -1793,7 +1805,7 @@ var NewAssetModal = function (_Component) {
               case 0:
                 entity = {};
 
-                if (!(!this.state.isLink && (!this.refs.name.value || this.refs.name.value.indexOf('.')) < 0)) {
+                if (!(!this.state.isLink && (!this.nameRef.current.value || this.nameRef.current.value.indexOf('.')) < 0)) {
                   _context.next = 3;
                   break;
                 }
@@ -1807,12 +1819,12 @@ var NewAssetModal = function (_Component) {
                 }
 
                 if (this.state.isLink) {
-                  entity.link = this.refs.link.value;
+                  entity.link = this.linkRef.current.value;
                   fragments = entity.link.split('/');
 
                   entity.name = fragments[fragments.length - 1];
                 } else {
-                  entity.name = this.refs.name.value;
+                  entity.name = this.nameRef.current.value;
                 }
 
                 _context.prev = 5;
@@ -1883,7 +1895,11 @@ var NewAssetModal = function (_Component) {
             null,
             'Relative or absolute path to existing file'
           ),
-          _react2.default.createElement('input', { type: 'text', name: 'link', ref: 'link' })
+          _react2.default.createElement('input', {
+            type: 'text',
+            name: 'link',
+            ref: this.linkRef
+          })
         ) : _react2.default.createElement(
           'div',
           { className: 'form-group' },
@@ -1892,9 +1908,15 @@ var NewAssetModal = function (_Component) {
             null,
             'Name'
           ),
-          _react2.default.createElement('input', { type: 'text', name: 'name', ref: 'name', placeholder: 'styles.css', onKeyPress: function onKeyPress(e) {
+          _react2.default.createElement('input', {
+            type: 'text',
+            name: 'name',
+            ref: this.nameRef,
+            placeholder: 'styles.css',
+            onKeyPress: function onKeyPress(e) {
               return _this3.handleKeyPress(e);
-            } })
+            }
+          })
         ),
         _jsreportStudio2.default.extensions.assets.options.allowAssetsLinkedToFiles !== false ? _react2.default.createElement(
           'div',

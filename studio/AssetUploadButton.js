@@ -3,7 +3,13 @@ import Studio from 'jsreport-studio'
 
 let _fileUploadButton
 
-export default class AssetUploadButton extends Component {
+class AssetUploadButton extends Component {
+  constructor (props) {
+    super(props)
+
+    this.inputFileRef = React.createRef()
+  }
+
   // we need to have global action in main_dev which is triggered when users clicks on + on images
   // this triggers invisible button in the toolbar
   static OpenUpload (opts) {
@@ -35,7 +41,7 @@ export default class AssetUploadButton extends Component {
     const reader = new FileReader()
 
     reader.onloadend = async () => {
-      this.refs.file.value = ''
+      this.inputFileRef.current.value = ''
 
       if (this.type === 'new') {
         if (Studio.workspaces) {
@@ -106,27 +112,27 @@ export default class AssetUploadButton extends Component {
     this.type = type
 
     if (defaults) {
-      this.refs.file.assetDefaults = defaults
+      this.inputFileRef.current.assetDefaults = defaults
     } else {
-      delete this.refs.file.assetDefaults
+      delete this.inputFileRef.current.assetDefaults
     }
 
     if (targetAssetIdAndName) {
-      this.refs.file.targetAsset = targetAssetIdAndName
+      this.inputFileRef.current.targetAsset = targetAssetIdAndName
     } else if (type !== 'new') {
-      this.refs.file.targetAsset = {
+      this.inputFileRef.current.targetAsset = {
         _id: this.props.tab.entity._id,
         name: this.props.tab.entity.name
       }
     }
 
     if (opts.uploadCallback) {
-      this.refs.file.uploadCallback = opts.uploadCallback
+      this.inputFileRef.current.uploadCallback = opts.uploadCallback
     } else {
-      delete this.refs.file.uploadCallback
+      delete this.inputFileRef.current.uploadCallback
     }
 
-    this.refs.file.dispatchEvent(new MouseEvent('click', {
+    this.inputFileRef.current.dispatchEvent(new MouseEvent('click', {
       'view': window,
       'bubbles': false,
       'cancelable': true
@@ -134,10 +140,20 @@ export default class AssetUploadButton extends Component {
   }
 
   renderUpload () {
-    return <input type='file' key='file' ref='file' style={{display: 'none'}} onChange={(e) => this.upload(e)} />
+    return (
+      <input
+        type='file'
+        key='file'
+        ref={this.inputFileRef}
+        style={{display: 'none'}}
+        onChange={(e) => this.upload(e)}
+      />
+    )
   }
 
   render () {
     return this.renderUpload(true)
   }
 }
+
+export default AssetUploadButton

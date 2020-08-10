@@ -6,6 +6,9 @@ import Studio from 'jsreport-studio'
 export default class NewAssetModal extends Component {
   constructor () {
     super()
+
+    this.nameRef = React.createRef()
+    this.linkRef = React.createRef()
     this.state = { isLink: false }
   }
 
@@ -17,13 +20,13 @@ export default class NewAssetModal extends Component {
 
   // the modal component for some reason after open focuses the panel itself
   componentDidMount () {
-    setTimeout(() => this.refs.name.focus(), 0)
+    setTimeout(() => this.nameRef.current.focus(), 0)
   }
 
   async createAsset (e) {
     let entity = {}
 
-    if (!this.state.isLink && (!this.refs.name.value || this.refs.name.value.indexOf('.')) < 0) {
+    if (!this.state.isLink && (!this.nameRef.current.value || this.nameRef.current.value.indexOf('.')) < 0) {
       return this.setState({ error: 'name should include file extension, for example foo.js' })
     }
 
@@ -32,11 +35,11 @@ export default class NewAssetModal extends Component {
     }
 
     if (this.state.isLink) {
-      entity.link = this.refs.link.value
+      entity.link = this.linkRef.current.value
       const fragments = entity.link.split('/')
       entity.name = fragments[fragments.length - 1]
     } else {
-      entity.name = this.refs.name.value
+      entity.name = this.nameRef.current.value
     }
 
     try {
@@ -65,12 +68,22 @@ export default class NewAssetModal extends Component {
         {isLink ? (
           <div className='form-group'>
             <label>Relative or absolute path to existing file</label>
-            <input type='text' name='link' ref='link' />
+            <input
+              type='text'
+              name='link'
+              ref={this.linkRef}
+            />
           </div>
         ) : (
           <div className='form-group'>
             <label>Name</label>
-            <input type='text' name='name' ref='name' placeholder='styles.css' onKeyPress={(e) => this.handleKeyPress(e)} />
+            <input
+              type='text'
+              name='name'
+              ref={this.nameRef}
+              placeholder='styles.css'
+              onKeyPress={(e) => this.handleKeyPress(e)}
+            />
           </div>
         )}
         {Studio.extensions.assets.options.allowAssetsLinkedToFiles !== false ? (
