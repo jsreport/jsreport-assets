@@ -1,9 +1,8 @@
-import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import AssetUploadButton from './AssetUploadButton.js'
 import Studio from 'jsreport-studio'
 
-export default class NewAssetModal extends Component {
+class NewAssetModal extends Component {
   constructor () {
     super()
 
@@ -117,6 +116,4 @@ export default class NewAssetModal extends Component {
   }
 }
 
-NewAssetModal.propTypes = {
-  close: PropTypes.func.isRequired
-}
+export default NewAssetModal

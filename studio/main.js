@@ -371,7 +371,7 @@ var _NewAssetModal = __webpack_require__(13);
 
 var _NewAssetModal2 = _interopRequireDefault(_NewAssetModal);
 
-var _AssetProperties = __webpack_require__(15);
+var _AssetProperties = __webpack_require__(14);
 
 var _AssetProperties2 = _interopRequireDefault(_AssetProperties);
 
@@ -1735,10 +1735,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _propTypes = __webpack_require__(14);
-
-var _propTypes2 = _interopRequireDefault(_propTypes);
-
 var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
@@ -1992,19 +1988,8 @@ var NewAssetModal = function (_Component) {
 
 exports.default = NewAssetModal;
 
-
-NewAssetModal.propTypes = {
-  close: _propTypes2.default.func.isRequired
-};
-
 /***/ }),
 /* 14 */
-/***/ (function(module, exports) {
-
-module.exports = Studio.libraries['prop-types'];
-
-/***/ }),
-/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
